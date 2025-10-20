@@ -34,11 +34,14 @@ export interface WalletLoginRequest {
   mnemonic: string;
 }
 
+export type VMType = 'evm' | 'move';
+
 export interface TransactionRequest {
   from: string;
   to: string;
   amount: string;
   priority?: string;
+  vm_type?: VMType;  // Which VM to use (default: evm)
   signature?: {
     signature_hex: string;
     public_key_hex: string;
