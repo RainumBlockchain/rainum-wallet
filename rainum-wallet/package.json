@@ -1,0 +1,51 @@
+{
+  "name": "rainum-wallet",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@dicebear/collection": "^9.2.4",
+    "@dicebear/core": "^9.2.4",
+    "@headlessui/react": "^2.2.9",
+    "@noble/ed25519": "^3.0.0",
+    "@noble/hashes": "^2.0.1",
+    "@react-three/drei": "^10.7.6",
+    "@react-three/fiber": "^9.3.0",
+    "@scure/bip32": "^2.0.1",
+    "@sentry/nextjs": "^10.19.0",
+    "@types/crypto-js": "^4.2.2",
+    "bip39": "^3.1.0",
+    "clsx": "^2.1.1",
+    "crypto-js": "^4.2.0",
+    "ethereum-blockies-base64": "^1.0.2",
+    "framer-motion": "^12.23.24",
+    "gsap": "^3.13.0",
+    "html5-qrcode": "^2.3.8",
+    "lucide-react": "^0.545.0",
+    "next": "15.5.4",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-qr-code": "^2.0.18",
+    "tailwind-merge": "^3.3.1",
+    "three": "^0.180.0",
+    "tweetnacl": "^1.0.3",
+    "tweetnacl-util": "^0.15.1",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.4",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
