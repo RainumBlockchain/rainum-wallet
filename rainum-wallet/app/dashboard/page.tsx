@@ -24,7 +24,8 @@ import AIChatWidget from "@/components/AIChatWidget";
 import { GasEstimator } from "@/components/GasEstimator";
 import CrossChainSwap from "@/components/CrossChainSwap";
 import { DualVMDashboard } from "@/components/DualVMDashboard";
-import { VMSelector, type VMType } from "@/components/shared/VMSelector";
+import { VMSelector, VMTypeBadge, type VMType } from "@/components/shared/VMSelector";
+import { MoveTransactionDetails } from "@/components/shared/MoveTransactionDetails";
 import blockies from "ethereum-blockies-base64";
 import QRCode from "react-qr-code";
 import { motion, AnimatePresence } from "framer-motion";
@@ -3560,6 +3561,8 @@ export default function DashboardPage() {
                               <div>
                                 <p className="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
                                   {isOutgoing ? "Sent" : "Received"}
+                                  {/* ⭐ NEW: VM Type Badge */}
+                                  <VMTypeBadge type={(tx as any).vm_type || 'evm'} />
                                   {tx.zkp_enabled && (
                                     <span className="text-[9px] px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded font-bold">
                                       PRIVATE
