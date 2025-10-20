@@ -23,6 +23,8 @@ import StakingDashboard from "@/components/StakingDashboard";
 import AIChatWidget from "@/components/AIChatWidget";
 import { GasEstimator } from "@/components/GasEstimator";
 import CrossChainSwap from "@/components/CrossChainSwap";
+import { DualVMDashboard } from "@/components/DualVMDashboard";
+import { VMSelector, type VMType } from "@/components/shared/VMSelector";
 import blockies from "ethereum-blockies-base64";
 import QRCode from "react-qr-code";
 import { motion, AnimatePresence } from "framer-motion";
@@ -457,6 +459,7 @@ export default function DashboardPage() {
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
   const [priority, setPriority] = useState("standard");
+  const [vmType, setVmType] = useState<VMType>("evm");  // ⭐ NEW: VM selection
   const [enableZKP, setEnableZKP] = useState(false);
   const [privacyLevel, setPrivacyLevel] = useState("partial");
   const [showSecurityDialog, setShowSecurityDialog] = useState(false);
@@ -2931,6 +2934,9 @@ export default function DashboardPage() {
                         <h3 className="text-xl font-bold text-black">Send RAIN</h3>
                       </div>
                       <form onSubmit={handleSubmitTransaction} className="space-y-5">
+                        {/* ⭐ NEW: VM Selector */}
+                        <VMSelector value={vmType} onChange={setVmType} />
+
                         <div>
                           <label className="block text-sm font-semibold text-gray-700 mb-2">Recipient Address</label>
                           <div className="flex gap-2">
