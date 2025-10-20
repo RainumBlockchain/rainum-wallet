@@ -29,14 +29,17 @@ export function middleware(request: NextRequest) {
 
   // === SCENARIO 1: Trying to access protected route WITHOUT session ===
   if (isProtectedRoute && !sessionToken) {
-    console.log('[Middleware] Blocked access to', pathname, '- No session');
+    // ONLY redirect if we're not already on login page (prevent loop!)
+    if (pathname !== '/' && !pathname.startsWith('/_next')) {
+      console.log('[Middleware] Blocked access to', pathname, '- No session');
 
-    const url = request.nextUrl.clone();
-    url.pathname = '/';
-    // Save where user was trying to go
-    url.searchParams.set('redirectTo', pathname);
+      const url = request.nextUrl.clone();
+      url.pathname = '/';
+      // Save where user was trying to go
+      url.searchParams.set('redirectTo', pathname);
 
-    return NextResponse.redirect(url);
+      return NextResponse.redirect(url);
+    }
   }
 
   // === SCENARIO 2: Trying to access public route (login) WITH active session ===
