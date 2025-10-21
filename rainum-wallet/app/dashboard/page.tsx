@@ -25,6 +25,7 @@ import { GasEstimator } from "@/components/GasEstimator";
 import CrossChainSwap from "@/components/CrossChainSwap";
 import { DualVMDashboard } from "@/components/DualVMDashboard";
 import { VMSelector, VMTypeBadge, type VMType } from "@/components/shared/VMSelector";
+import { CrossVMIndicator } from "@/components/shared/CrossVMBadge";
 import { MoveTransactionDetails } from "@/components/shared/MoveTransactionDetails";
 import blockies from "ethereum-blockies-base64";
 import QRCode from "react-qr-code";
@@ -3564,6 +3565,7 @@ export default function DashboardPage() {
                                   {isOutgoing ? "Sent" : "Received"}
                                   {/* ⭐ NEW: VM Type Badge */}
                                   <VMTypeBadge type={(tx as any).vm_type || 'evm'} />
+                                  <CrossVMIndicator isCrossVM={!!(tx as any).cross_vm_call} />
                                   {tx.zkp_enabled && (
                                     <span className="text-[9px] px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded font-bold">
                                       PRIVATE
