@@ -196,7 +196,8 @@ export async function sendTransaction(
   mnemonic?: string,
   enableZKP: boolean = false,
   privacyLevel: string = 'full',
-  accountIndex: number = 0
+  accountIndex: number = 0,
+  vmType: VMType = 'evm'
 ): Promise<TransactionResponse> {
   try {
     // SECURITY: Sanitize all user inputs
@@ -335,6 +336,7 @@ export async function sendTransaction(
         gas_limit: gasLimit,
         zkp_enabled: enableZKP,
         privacy_level: privacyLevel,
+        vm_type: vmType,  // Include VM type
       }),
     });
 

@@ -1138,7 +1138,8 @@ export default function DashboardPage() {
         mnemonic,            // mnemonic for signing
         enableZKP,           // ZKP privacy flag
         privacyLevel,        // Privacy level (none, partial, standard, full)
-        activeAccountIndex   // HD wallet account index
+        activeAccountIndex,  // HD wallet account index
+        vmType               // VM type (evm or move)
       );
 
       if (result.success) {
