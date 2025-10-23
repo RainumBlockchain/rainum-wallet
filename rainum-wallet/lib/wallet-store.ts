@@ -337,6 +337,22 @@ export const useWalletStore = create<WalletState>()(
       skipHydration: false,
       onRehydrateStorage: () => (state) => {
         // 🔒 SECURITY: Mnemonic NOT restored from storage
+
+        // MIGRATION: If user has old wallet without encrypted mnemonic, try to load from auth-manager
+        if (state && state.isConnected && !state.encryptedMnemonic && state.address) {
+          try {
+            const { loadWallet } = require('./auth-manager');
+            const wallet = loadWallet();
+
+            if (wallet && wallet.address === state.address && wallet.mnemonic) {
+              console.log('🔄 Migrating wallet to encrypted storage...');
+              // Set mnemonic in memory (will be encrypted on next login)
+              state.mnemonic = wallet.mnemonic;
+            }
+          } catch (error) {
+            console.error('Migration failed:', error);
+          }
+        }
         // User must re-authenticate after page refresh for maximum security
         // This prevents XSS attacks from stealing mnemonics from browser storage
         if (typeof window !== 'undefined' && state?.isConnected && !state.mnemonic) {
