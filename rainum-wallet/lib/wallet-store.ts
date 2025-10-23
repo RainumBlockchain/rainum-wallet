@@ -176,9 +176,14 @@ export const useWalletStore = create<WalletState>()(
 
       // HD Wallet actions
       createAccount: (name?: string) => {
-        const { mnemonic, accounts } = get();
-        if (!mnemonic) {
-          console.error('No mnemonic available');
+        const { mnemonic, accounts, encryptedMnemonic } = get();
+        if (!mnemonic && !encryptedMnemonic) {
+          console.error('No mnemonic available - please re-login');
+          return;
+        }
+
+        if (!mnemonic && encryptedMnemonic) {
+          console.error('Mnemonic is encrypted - please unlock with password first');
           return;
         }
 
