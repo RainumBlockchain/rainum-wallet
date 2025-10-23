@@ -81,7 +81,7 @@ export async function handleCreateWallet(
     const sessionToken = await sessionManager.createSession(address);
 
     // 5. Update wallet store (in-memory state)
-    useWalletStore.getState().connect(address, mnemonic);
+    useWalletStore.getState().connect(address, mnemonic, password);
 
     // 6. Start session monitoring
     sessionManager.startSessionMonitoring(() => {
@@ -181,7 +181,7 @@ export async function handleImportWallet(
     await sessionManager.createSession(address);
 
     // 5. Update wallet store
-    useWalletStore.getState().connect(address, mnemonic);
+    useWalletStore.getState().connect(address, mnemonic, password);
 
     // 6. Start session monitoring
     sessionManager.startSessionMonitoring(() => {
@@ -359,8 +359,8 @@ export async function handleLogin(
     // 2. Create session (await for HttpOnly cookie)
     await sessionManager.createSession(wallet.address);
 
-    // 2. Update wallet store
-    useWalletStore.getState().connect(wallet.address, wallet.mnemonic);
+    // 2. Update wallet store (password available from wallet.password)
+    useWalletStore.getState().connect(wallet.address, wallet.mnemonic, password);
 
     // 4. Start session monitoring
     sessionManager.startSessionMonitoring(() => {

@@ -67,7 +67,8 @@ export default function BackupExportPage() {
 
   // Redirect if not connected
   useEffect(() => {
-    if (!mnemonic) {
+    const { encryptedMnemonic } = useWalletStore.getState();
+    if (!mnemonic && !encryptedMnemonic) {
       router.push('/');
     }
   }, [mnemonic, router]);
@@ -115,6 +116,16 @@ export default function BackupExportPage() {
       const isValid = verifyPassword(password);
 
       if (isValid) {
+        // Unlock mnemonic from encrypted storage
+        const { unlockMnemonic } = useWalletStore.getState();
+        const unlocked = unlockMnemonic(password);
+
+        if (!unlocked) {
+          setAuthError('Failed to unlock wallet. Please try again.');
+          setIsVerifying(false);
+          return;
+        }
+
         setStep('select');
         setPassword(''); // Clear password from memory
       } else {
@@ -185,7 +196,8 @@ export default function BackupExportPage() {
     }
   };
 
-  if (!mnemonic) return null;
+  const { encryptedMnemonic: hasEncrypted } = useWalletStore.getState();
+  if (!mnemonic && !hasEncrypted) return null;
 
   // AUTH STEP
   if (step === 'auth') {

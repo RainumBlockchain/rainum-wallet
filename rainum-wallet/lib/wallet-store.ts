@@ -13,6 +13,8 @@ interface WalletState {
   // Legacy fields (for backward compatibility during migration)
   address: string | null;
   mnemonic: string | null;  // Kept in memory ONLY (not persisted to localStorage for security)
+  encryptedMnemonic: string | null; // Encrypted mnemonic (persisted safely)
+  mnemonicSalt: string | null; // Salt for decryption
   isConnected: boolean;
   balance: number;
 
@@ -21,10 +23,11 @@ interface WalletState {
   activeAccountIndex: number;
 
   // Actions
-  connect: (address: string, mnemonic?: string) => Promise<void>;
+  connect: (address: string, mnemonic?: string, password?: string) => Promise<void>;
   disconnect: () => void;
   setBalance: (balance: number) => void;
   updateBalance: () => Promise<void>;
+  unlockMnemonic: (password: string) => boolean;
 
   // New HD Wallet actions
   createAccount: (name?: string) => void;
@@ -40,12 +43,14 @@ export const useWalletStore = create<WalletState>()(
     (set, get) => ({
       address: null,
       mnemonic: null,
+      encryptedMnemonic: null,
+      mnemonicSalt: null,
       isConnected: false,
       balance: 0,
       accounts: [],
       activeAccountIndex: 0,
 
-      connect: async (address: string, mnemonic?: string) => {
+      connect: async (address: string, mnemonic?: string, password?: string) => {
         const state = get();
 
         // If mnemonic is provided, validate and initialize accounts
@@ -73,18 +78,28 @@ export const useWalletStore = create<WalletState>()(
             }];
           }
 
+          // Encrypt mnemonic if password provided
+          let encryptedData = null;
+          let saltData = null;
+          if (password) {
+            const { encryptMnemonic } = await import('./auth-manager');
+            const encrypted = encryptMnemonic(mnemonic, password);
+            encryptedData = encrypted.encrypted;
+            saltData = encrypted.salt;
+          }
+
           set({
             address: derived.address,
             mnemonic,
+            encryptedMnemonic: encryptedData,
+            mnemonicSalt: saltData,
             isConnected: true,
             accounts: validAccounts,
             activeAccountIndex: 0
           });
 
-          // 🔒 SECURITY: Mnemonic stored ONLY in memory (Zustand state)
-          // NOT persisted to sessionStorage/localStorage to prevent XSS attacks
-          // User will need to re-authenticate after page refresh - this is intentional
-          // for maximum security (same behavior as MetaMask, Phantom, etc.)
+          // 🔒 SECURITY: Mnemonic stored in memory AND encrypted in localStorage
+          // This allows seed phrase export while maintaining security
 
           // AUTO-DISCOVERY: Scan blockchain for all accounts with activity
           console.log('🔍 Running auto-discovery for existing accounts...');
@@ -115,11 +130,30 @@ export const useWalletStore = create<WalletState>()(
         set({
           address: null,
           mnemonic: null,
+          encryptedMnemonic: null,
+          mnemonicSalt: null,
           isConnected: false,
           balance: 0,
           accounts: [],
           activeAccountIndex: 0
         });
+      },
+
+      unlockMnemonic: (password: string) => {
+        const { encryptedMnemonic, mnemonicSalt } = get();
+        if (!encryptedMnemonic || !mnemonicSalt) {
+          console.error('No encrypted mnemonic available');
+          return false;
+        }
+
+        const { decryptMnemonic } = require('./auth-manager');
+        const decrypted = decryptMnemonic(encryptedMnemonic, password, mnemonicSalt);
+
+        if (decrypted) {
+          set({ mnemonic: decrypted });
+          return true;
+        }
+        return false;
       },
 
       setBalance: (balance: number) => {
@@ -291,8 +325,10 @@ export const useWalletStore = create<WalletState>()(
       partialize: (state) => ({
         address: state.address,
         // CRITICAL SECURITY: Do NOT persist mnemonic in localStorage
-        // Mnemonic is stored encrypted separately and loaded into memory on login
         // mnemonic: state.mnemonic, // ❌ REMOVED - security vulnerability
+        // ✅ SAFE: Persist encrypted mnemonic with salt for seed phrase export
+        encryptedMnemonic: state.encryptedMnemonic,
+        mnemonicSalt: state.mnemonicSalt,
         isConnected: state.isConnected,
         accounts: state.accounts,
         activeAccountIndex: state.activeAccountIndex,
