@@ -176,19 +176,26 @@ export function useWebSocket({
     };
 
     ws.current.onerror = (error) => {
-      console.error('WebSocket error:', error);
-      console.error('WebSocket URL:', wsUrl);
-      console.error('WebSocket state:', ws.current?.readyState);
+      // Only log if this is not a connection refusal (which is common during dev)
+      if (ws.current?.readyState !== WebSocket.CLOSED) {
+        console.error('WebSocket error:', error);
+        console.error('WebSocket URL:', wsUrl);
+        console.error('WebSocket state:', ws.current?.readyState);
+      } else {
+        console.log('WebSocket connection failed - blockchain node may not be running');
+      }
     };
 
     ws.current.onclose = (event) => {
-      console.log('WebSocket disconnected', {
-        code: event.code,
-        reason: event.reason,
-        wasClean: event.wasClean,
-        unmounting: isUnmountingRef.current,
-      });
-      console.log('Stack trace:', new Error().stack);
+      const isCleanClose = event.wasClean && event.code === 1000;
+
+      if (!isCleanClose && !isUnmountingRef.current) {
+        console.log('WebSocket disconnected unexpectedly', {
+          code: event.code,
+          reason: event.reason || 'No reason provided',
+        });
+      }
+
       setIsConnected(false);
 
       // Don't reconnect if component is unmounting
@@ -197,11 +204,14 @@ export function useWebSocket({
       }
 
       // Auto-reconnect with exponential backoff (only if not a clean close)
-      if (autoReconnect && event.code !== 1000) {
+      if (autoReconnect && !isCleanClose) {
         // Longer initial delay to avoid overwhelming the server
         const baseDelay = 5000; // Start with 5 seconds
         const delay = Math.min(baseDelay * Math.pow(1.5, reconnectAttemptsRef.current), 60000);
-        console.log(`Reconnecting in ${delay}ms... (attempt ${reconnectAttemptsRef.current + 1})`);
+
+        if (reconnectAttemptsRef.current === 0) {
+          console.log(`Will attempt to reconnect to blockchain node in ${delay/1000}s...`);
+        }
 
         reconnectTimeoutRef.current = setTimeout(() => {
           reconnectAttemptsRef.current += 1;

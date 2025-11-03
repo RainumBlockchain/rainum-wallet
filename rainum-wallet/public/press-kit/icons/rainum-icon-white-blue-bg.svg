@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 150 150">
+  <defs>
+    <style>
+      .st0 {
+        fill: #ffffff;
+      }
+      .bg {
+        fill: #0019ff;
+      }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="150" height="150" rx="20" ry="20"/>
+  <g transform="translate(15, 0)">
+    <rect class="st0" x="28.95" y="18.84" width="28.08" height="28.08"/>
+    <rect class="st0" x="57.03" y="18.84" width="28.08" height="28.08"/>
+    <path class="st0" d="M85.11,18.84h0c15.5,0,28.08,12.58,28.08,28.08h-28.08v-28.08h0Z"/>
+    <rect class="st0" x="85.11" y="46.92" width="28.08" height="28.08"/>
+    <rect class="st0" x="57.03" y="75" width="28.08" height="28.08"/>
+    <rect class="st0" x="85.11" y="103.08" width="28.08" height="28.08"/>
+    <rect class="st0" x="28.95" y="103.08" width="28.08" height="28.08"/>
+    <polygon class="st0" points="113.19 103.08 85.11 103.08 85.11 75 113.19 103.08"/>
+    <polygon class="st0" points="85.11 131.16 57.03 103.08 85.11 103.08 85.11 131.16"/>
+  </g>
+</svg>
