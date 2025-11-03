@@ -19,7 +19,7 @@ export default function Header() {
     <header className={`sticky top-[36px] sm:top-[40px] z-40 w-full bg-black px-3 sm:px-4 py-3 sm:py-4 transition-opacity duration-200 ${isScrolled ? 'opacity-50 hover:opacity-100' : 'opacity-100'}`}>
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Image
-          src="/rainum-logo-green-border.svg"
+          src="/rainum-logo-full.svg"
           alt="Rainum"
           width={160}
           height={40}

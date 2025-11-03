@@ -1572,7 +1572,7 @@ export default function DashboardPage() {
 
             <div className="relative flex grow flex-col gap-y-5 overflow-y-auto bg-white/95 backdrop-blur-xl px-6 pb-4">
               <div className="flex h-16 shrink-0 items-center justify-between">
-                <img src="/rainum-logo-black.svg" alt="Rainum" className="h-6 w-auto" />
+                <img src="/press-kit/logos/rainum-logo-blue.svg" alt="Rainum" className="h-6 w-auto" />
 
                 {/* Network Selector Mobile */}
                 <Menu as="div" className="relative">
@@ -2297,7 +2297,7 @@ export default function DashboardPage() {
       <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
         <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white/95 backdrop-blur-xl px-6 pb-4">
           <div className="flex h-16 shrink-0 items-center justify-between">
-            <img src="/rainum-logo-black.svg" alt="Rainum" className="h-7 w-auto" />
+            <img src="/press-kit/logos/rainum-logo-blue.svg" alt="Rainum" className="h-7 w-auto" />
 
             {/* Network Selector Desktop */}
             <Menu as="div" className="relative">
@@ -2903,6 +2903,354 @@ export default function DashboardPage() {
                     </button>
                   </div>
                 </div>
+
+                {/* Transaction History */}
+                <div className="bg-white border border-gray-200 rounded p-8 shadow-sm">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold text-black tracking-tight">Transaction History</h2>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={exportToCSV}
+                        disabled={transactions.length === 0}
+                        className="text-sm text-green-600 hover:text-green-700 font-semibold flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Download className="w-4 h-4" />
+                        Export CSV
+                      </button>
+                      <button
+                        onClick={fetchTransactions}
+                        disabled={loadingTransactions}
+                        className="text-sm text-[#0019ff] hover:text-blue-700 font-semibold flex items-center gap-1 disabled:opacity-50"
+                      >
+                        <RefreshCw className={classNames("w-4 h-4", loadingTransactions ? "animate-spin" : "")} />
+                        Refresh
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Search and Filter Controls */}
+                  {transactions.length > 0 && (
+                    <div className="mb-6 space-y-4">
+                      {/* Search */}
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input
+                          type="text"
+                          placeholder="Search by hash or address..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded focus:ring-2 focus:ring-[#0019ff] focus:border-[#0019ff] outline-none transition-all text-sm text-gray-900"
+                        />
+                      </div>
+
+                      {/* Filter and Sort */}
+                      <div className="flex flex-wrap gap-3">
+                        {/* Status Filter */}
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-semibold text-gray-600">Status:</span>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => setFilterStatus("all")}
+                              className={classNames(
+                                "px-3 py-1.5 text-xs font-semibold rounded transition-all",
+                                filterStatus === "all"
+                                  ? "bg-[#0019ff] text-white"
+                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                              )}
+                            >
+                              All
+                            </button>
+                            <button
+                              onClick={() => setFilterStatus("confirmed")}
+                              className={classNames(
+                                "px-3 py-1.5 text-xs font-semibold rounded transition-all",
+                                filterStatus === "confirmed"
+                                  ? "bg-green-600 text-white"
+                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                              )}
+                            >
+                              Confirmed
+                            </button>
+                            <button
+                              onClick={() => setFilterStatus("pending")}
+                              className={classNames(
+                                "px-3 py-1.5 text-xs font-semibold rounded transition-all",
+                                filterStatus === "pending"
+                                  ? "bg-yellow-600 text-white"
+                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                              )}
+                            >
+                              Pending
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Sort By */}
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-semibold text-gray-600">Sort:</span>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => setSortBy("newest")}
+                              className={classNames(
+                                "px-3 py-1.5 text-xs font-semibold rounded transition-all",
+                                sortBy === "newest"
+                                  ? "bg-[#0019ff] text-white"
+                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                              )}
+                            >
+                              Newest
+                            </button>
+                            <button
+                              onClick={() => setSortBy("oldest")}
+                              className={classNames(
+                                "px-3 py-1.5 text-xs font-semibold rounded transition-all",
+                                sortBy === "oldest"
+                                  ? "bg-[#0019ff] text-white"
+                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                              )}
+                            >
+                              Oldest
+                            </button>
+                            <button
+                              onClick={() => setSortBy("amount")}
+                              className={classNames(
+                                "px-3 py-1.5 text-xs font-semibold rounded transition-all",
+                                sortBy === "amount"
+                                  ? "bg-[#0019ff] text-white"
+                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                              )}
+                            >
+                              Amount
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {transactions.length === 0 && loadingTransactions ? (
+                    <div className="space-y-3">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <TransactionCardSkeleton key={i} />
+                      ))}
+                    </div>
+                  ) : transactions.length === 0 ? (
+                    <div className="text-center py-16">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <ArrowRightLeft className="w-8 h-8 text-gray-400" />
+                      </div>
+                      <p className="text-gray-900 font-semibold mb-1">No transactions yet</p>
+                      <p className="text-sm text-gray-500">Your transaction history will appear here</p>
+                    </div>
+                  ) : getFilteredAndSortedTransactions().length === 0 && !loadingTransactions ? (
+                    <div className="text-center py-16">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Search className="w-8 h-8 text-gray-400" />
+                      </div>
+                      <p className="text-gray-900 font-semibold mb-1">No transactions found</p>
+                      <p className="text-sm text-gray-500">Try adjusting your search or filter</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="relative">
+                        {/* Loading Overlay */}
+                        {loadingTransactions && (
+                          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10 rounded">
+                            <div className="bg-white px-6 py-4 rounded-lg shadow-lg border border-gray-200 flex items-center gap-3">
+                              <RefreshCw className="w-5 h-5 text-[#0019ff] animate-spin" />
+                              <p className="text-sm font-semibold text-gray-700">Refreshing...</p>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="space-y-3">
+                          {getPaginatedTransactions().map((tx, index) => {
+                        const isOutgoing = tx.from?.toLowerCase() === address?.toLowerCase();
+                        return (
+                          <button
+                            key={index}
+                            onClick={() => {
+                              setSelectedTransaction(tx);
+                              setShowTransactionDetail(true);
+                            }}
+                            className="w-full flex items-center justify-between p-4 rounded border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer hover:bg-gray-50"
+                          >
+                            <div className="flex items-center gap-4">
+                              <div
+                                className={classNames(
+                                  "w-10 h-10 rounded-full flex items-center justify-center relative",
+                                  tx.zkp_enabled ? "bg-purple-50" : (isOutgoing ? "bg-red-50" : "bg-green-50")
+                                )}
+                              >
+                                {tx.zkp_enabled ? (
+                                  <Shield className="w-5 h-5 text-purple-600" />
+                                ) : (
+                                  <ArrowRightLeft
+                                    className={classNames(
+                                      "w-5 h-5",
+                                      isOutgoing ? "text-red-600 rotate-90" : "text-green-600 -rotate-90"
+                                    )}
+                                  />
+                                )}
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
+                                  {isOutgoing ? "Sent" : "Received"}
+                                  {/* ⭐ NEW: VM Type Badge */}
+                                  <VMTypeBadge type={(tx as any).vm_type || 'evm'} />
+                                  <CrossVMIndicator isCrossVM={!!(tx as any).cross_vm_call} />
+                                  {tx.zkp_enabled && (
+                                    <span className="text-[9px] px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded font-bold">
+                                      PRIVATE
+                                    </span>
+                                  )}
+                                  {tx.status && (() => {
+                                    const statusBadge = getStatusBadge(tx.status);
+                                    const Icon = statusBadge.icon;
+                                    return (
+                                      <span className={classNames(
+                                        "inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded font-bold border",
+                                        statusBadge.className
+                                      )}>
+                                        <Icon className="w-2.5 h-2.5" />
+                                        {statusBadge.text}
+                                      </span>
+                                    );
+                                  })()}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {(() => {
+                                    const isEncrypted = (addr: string) => addr === '0x0000000000000000000000000000000000000000' || addr?.startsWith('0x00000000');
+                                    const targetAddr = isOutgoing ? tx.to : tx.from;
+                                    const savedContact = targetAddr ? savedAddresses.find(a => a.address.toLowerCase() === targetAddr.toLowerCase()) : null;
+
+                                    if (isOutgoing) {
+                                      if (isEncrypted(tx.to)) return <span className="font-mono">To: 🔒 [ENCRYPTED]</span>;
+                                      if (savedContact) {
+                                        return (
+                                          <span className="flex items-center gap-1">
+                                            <User className="w-3 h-3" />
+                                            <span className="font-semibold">{savedContact.name}</span>
+                                            <span className="text-gray-400 font-mono text-[10px]">({tx.to?.slice(0, 6)}...)</span>
+                                          </span>
+                                        );
+                                      }
+                                      return <span className="font-mono">To: {tx.to?.slice(0, 8)}...{tx.to?.slice(-6)}</span>;
+                                    } else {
+                                      if (isEncrypted(tx.from)) return <span className="font-mono">From: 🔒 [ENCRYPTED]</span>;
+                                      if (savedContact) {
+                                        return (
+                                          <span className="flex items-center gap-1">
+                                            <User className="w-3 h-3" />
+                                            <span className="font-semibold">{savedContact.name}</span>
+                                            <span className="text-gray-400 font-mono text-[10px]">({tx.from?.slice(0, 6)}...)</span>
+                                          </span>
+                                        );
+                                      }
+                                      return <span className="font-mono">From: {tx.from?.slice(0, 8)}...{tx.from?.slice(-6)}</span>;
+                                    }
+                                  })()}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right flex flex-col items-end gap-1">
+                              <p
+                                className={classNames(
+                                  "text-sm font-bold",
+                                  tx.zkp_enabled ? "text-purple-600" : (isOutgoing ? "text-red-600" : "text-green-600")
+                                )}
+                              >
+                                {isOutgoing ? "-" : "+"} {formatTransactionAmount(tx)}
+                              </p>
+                              {getPrivacyBadge(tx) && (
+                                <span className={classNames(
+                                  "text-[10px] px-2 py-0.5 rounded-full border font-semibold",
+                                  getPrivacyBadge(tx)!.className
+                                )}>
+                                  🔒 {getPrivacyBadge(tx)!.text}
+                                </span>
+                              )}
+                              <p className="text-xs text-gray-500">
+                                {tx.timestamp ? getRelativeTime(tx.timestamp) : "Pending"}
+                              </p>
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    {/* Pagination Controls */}
+                    {getTotalPages() > 1 && (
+                      <div className="mt-6 flex items-center justify-between border-t border-gray-200 pt-4">
+                        <div className="text-sm text-gray-600">
+                          Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, getFilteredAndSortedTransactions().length)} of {getFilteredAndSortedTransactions().length} transactions
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setCurrentPage(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className={classNames(
+                              "px-3 py-2 rounded border transition-all flex items-center gap-1",
+                              currentPage === 1
+                                ? "border-gray-200 text-gray-400 cursor-not-allowed"
+                                : "border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400"
+                            )}
+                          >
+                            <ChevronLeft className="w-4 h-4" />
+                            Previous
+                          </button>
+
+                          <div className="flex items-center gap-1">
+                            {Array.from({ length: getTotalPages() }, (_, i) => i + 1).map((page) => {
+                              // Show first page, last page, current page, and pages around current
+                              const showPage = page === 1 ||
+                                             page === getTotalPages() ||
+                                             Math.abs(page - currentPage) <= 1;
+
+                              if (!showPage) {
+                                // Show ellipsis
+                                if (page === 2 && currentPage > 3) return <span key={page} className="px-2 text-gray-400">...</span>;
+                                if (page === getTotalPages() - 1 && currentPage < getTotalPages() - 2) return <span key={page} className="px-2 text-gray-400">...</span>;
+                                return null;
+                              }
+
+                              return (
+                                <button
+                                  key={page}
+                                  onClick={() => setCurrentPage(page)}
+                                  className={classNames(
+                                    "px-3 py-2 rounded border transition-all min-w-[40px]",
+                                    currentPage === page
+                                      ? "bg-[#0019ff] text-white border-[#0019ff]"
+                                      : "border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400"
+                                  )}
+                                >
+                                  {page}
+                                </button>
+                              );
+                            })}
+                          </div>
+
+                          <button
+                            onClick={() => setCurrentPage(currentPage + 1)}
+                            disabled={currentPage === getTotalPages()}
+                            className={classNames(
+                              "px-3 py-2 rounded border transition-all flex items-center gap-1",
+                              currentPage === getTotalPages()
+                                ? "border-gray-200 text-gray-400 cursor-not-allowed"
+                                : "border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400"
+                            )}
+                          >
+                            Next
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                      </div>
+                    </>
+                  )}
+                </div>
               </motion.div>
             )}
 
@@ -3369,354 +3717,6 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </div>
-                </div>
-
-                {/* Transaction History */}
-                <div className="bg-white border border-gray-200 rounded p-8 shadow-sm">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-black tracking-tight">Transaction History</h2>
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={exportToCSV}
-                        disabled={transactions.length === 0}
-                        className="text-sm text-green-600 hover:text-green-700 font-semibold flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <Download className="w-4 h-4" />
-                        Export CSV
-                      </button>
-                      <button
-                        onClick={fetchTransactions}
-                        disabled={loadingTransactions}
-                        className="text-sm text-[#0019ff] hover:text-blue-700 font-semibold flex items-center gap-1 disabled:opacity-50"
-                      >
-                        <RefreshCw className={classNames("w-4 h-4", loadingTransactions ? "animate-spin" : "")} />
-                        Refresh
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Search and Filter Controls */}
-                  {transactions.length > 0 && (
-                    <div className="mb-6 space-y-4">
-                      {/* Search */}
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input
-                          type="text"
-                          placeholder="Search by hash or address..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded focus:ring-2 focus:ring-[#0019ff] focus:border-[#0019ff] outline-none transition-all text-sm text-gray-900"
-                        />
-                      </div>
-
-                      {/* Filter and Sort */}
-                      <div className="flex flex-wrap gap-3">
-                        {/* Status Filter */}
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-gray-600">Status:</span>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => setFilterStatus("all")}
-                              className={classNames(
-                                "px-3 py-1.5 text-xs font-semibold rounded transition-all",
-                                filterStatus === "all"
-                                  ? "bg-[#0019ff] text-white"
-                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                              )}
-                            >
-                              All
-                            </button>
-                            <button
-                              onClick={() => setFilterStatus("confirmed")}
-                              className={classNames(
-                                "px-3 py-1.5 text-xs font-semibold rounded transition-all",
-                                filterStatus === "confirmed"
-                                  ? "bg-green-600 text-white"
-                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                              )}
-                            >
-                              Confirmed
-                            </button>
-                            <button
-                              onClick={() => setFilterStatus("pending")}
-                              className={classNames(
-                                "px-3 py-1.5 text-xs font-semibold rounded transition-all",
-                                filterStatus === "pending"
-                                  ? "bg-yellow-600 text-white"
-                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                              )}
-                            >
-                              Pending
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Sort By */}
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-gray-600">Sort:</span>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => setSortBy("newest")}
-                              className={classNames(
-                                "px-3 py-1.5 text-xs font-semibold rounded transition-all",
-                                sortBy === "newest"
-                                  ? "bg-[#0019ff] text-white"
-                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                              )}
-                            >
-                              Newest
-                            </button>
-                            <button
-                              onClick={() => setSortBy("oldest")}
-                              className={classNames(
-                                "px-3 py-1.5 text-xs font-semibold rounded transition-all",
-                                sortBy === "oldest"
-                                  ? "bg-[#0019ff] text-white"
-                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                              )}
-                            >
-                              Oldest
-                            </button>
-                            <button
-                              onClick={() => setSortBy("amount")}
-                              className={classNames(
-                                "px-3 py-1.5 text-xs font-semibold rounded transition-all",
-                                sortBy === "amount"
-                                  ? "bg-[#0019ff] text-white"
-                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                              )}
-                            >
-                              Amount
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {transactions.length === 0 && loadingTransactions ? (
-                    <div className="space-y-3">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <TransactionCardSkeleton key={i} />
-                      ))}
-                    </div>
-                  ) : transactions.length === 0 ? (
-                    <div className="text-center py-16">
-                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <ArrowRightLeft className="w-8 h-8 text-gray-400" />
-                      </div>
-                      <p className="text-gray-900 font-semibold mb-1">No transactions yet</p>
-                      <p className="text-sm text-gray-500">Your transaction history will appear here</p>
-                    </div>
-                  ) : getFilteredAndSortedTransactions().length === 0 && !loadingTransactions ? (
-                    <div className="text-center py-16">
-                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Search className="w-8 h-8 text-gray-400" />
-                      </div>
-                      <p className="text-gray-900 font-semibold mb-1">No transactions found</p>
-                      <p className="text-sm text-gray-500">Try adjusting your search or filter</p>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="relative">
-                        {/* Loading Overlay */}
-                        {loadingTransactions && (
-                          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10 rounded">
-                            <div className="bg-white px-6 py-4 rounded-lg shadow-lg border border-gray-200 flex items-center gap-3">
-                              <RefreshCw className="w-5 h-5 text-[#0019ff] animate-spin" />
-                              <p className="text-sm font-semibold text-gray-700">Refreshing...</p>
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="space-y-3">
-                          {getPaginatedTransactions().map((tx, index) => {
-                        const isOutgoing = tx.from?.toLowerCase() === address?.toLowerCase();
-                        return (
-                          <button
-                            key={index}
-                            onClick={() => {
-                              setSelectedTransaction(tx);
-                              setShowTransactionDetail(true);
-                            }}
-                            className="w-full flex items-center justify-between p-4 rounded border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer hover:bg-gray-50"
-                          >
-                            <div className="flex items-center gap-4">
-                              <div
-                                className={classNames(
-                                  "w-10 h-10 rounded-full flex items-center justify-center relative",
-                                  tx.zkp_enabled ? "bg-purple-50" : (isOutgoing ? "bg-red-50" : "bg-green-50")
-                                )}
-                              >
-                                {tx.zkp_enabled ? (
-                                  <Shield className="w-5 h-5 text-purple-600" />
-                                ) : (
-                                  <ArrowRightLeft
-                                    className={classNames(
-                                      "w-5 h-5",
-                                      isOutgoing ? "text-red-600 rotate-90" : "text-green-600 -rotate-90"
-                                    )}
-                                  />
-                                )}
-                              </div>
-                              <div>
-                                <p className="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
-                                  {isOutgoing ? "Sent" : "Received"}
-                                  {/* ⭐ NEW: VM Type Badge */}
-                                  <VMTypeBadge type={(tx as any).vm_type || 'evm'} />
-                                  <CrossVMIndicator isCrossVM={!!(tx as any).cross_vm_call} />
-                                  {tx.zkp_enabled && (
-                                    <span className="text-[9px] px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded font-bold">
-                                      PRIVATE
-                                    </span>
-                                  )}
-                                  {tx.status && (() => {
-                                    const statusBadge = getStatusBadge(tx.status);
-                                    const Icon = statusBadge.icon;
-                                    return (
-                                      <span className={classNames(
-                                        "inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded font-bold border",
-                                        statusBadge.className
-                                      )}>
-                                        <Icon className="w-2.5 h-2.5" />
-                                        {statusBadge.text}
-                                      </span>
-                                    );
-                                  })()}
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  {(() => {
-                                    const isEncrypted = (addr: string) => addr === '0x0000000000000000000000000000000000000000' || addr?.startsWith('0x00000000');
-                                    const targetAddr = isOutgoing ? tx.to : tx.from;
-                                    const savedContact = targetAddr ? savedAddresses.find(a => a.address.toLowerCase() === targetAddr.toLowerCase()) : null;
-
-                                    if (isOutgoing) {
-                                      if (isEncrypted(tx.to)) return <span className="font-mono">To: 🔒 [ENCRYPTED]</span>;
-                                      if (savedContact) {
-                                        return (
-                                          <span className="flex items-center gap-1">
-                                            <User className="w-3 h-3" />
-                                            <span className="font-semibold">{savedContact.name}</span>
-                                            <span className="text-gray-400 font-mono text-[10px]">({tx.to?.slice(0, 6)}...)</span>
-                                          </span>
-                                        );
-                                      }
-                                      return <span className="font-mono">To: {tx.to?.slice(0, 8)}...{tx.to?.slice(-6)}</span>;
-                                    } else {
-                                      if (isEncrypted(tx.from)) return <span className="font-mono">From: 🔒 [ENCRYPTED]</span>;
-                                      if (savedContact) {
-                                        return (
-                                          <span className="flex items-center gap-1">
-                                            <User className="w-3 h-3" />
-                                            <span className="font-semibold">{savedContact.name}</span>
-                                            <span className="text-gray-400 font-mono text-[10px]">({tx.from?.slice(0, 6)}...)</span>
-                                          </span>
-                                        );
-                                      }
-                                      return <span className="font-mono">From: {tx.from?.slice(0, 8)}...{tx.from?.slice(-6)}</span>;
-                                    }
-                                  })()}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="text-right flex flex-col items-end gap-1">
-                              <p
-                                className={classNames(
-                                  "text-sm font-bold",
-                                  tx.zkp_enabled ? "text-purple-600" : (isOutgoing ? "text-red-600" : "text-green-600")
-                                )}
-                              >
-                                {isOutgoing ? "-" : "+"} {formatTransactionAmount(tx)}
-                              </p>
-                              {getPrivacyBadge(tx) && (
-                                <span className={classNames(
-                                  "text-[10px] px-2 py-0.5 rounded-full border font-semibold",
-                                  getPrivacyBadge(tx)!.className
-                                )}>
-                                  🔒 {getPrivacyBadge(tx)!.text}
-                                </span>
-                              )}
-                              <p className="text-xs text-gray-500">
-                                {tx.timestamp ? getRelativeTime(tx.timestamp) : "Pending"}
-                              </p>
-                            </div>
-                          </button>
-                        )
-                      })}
-                    </div>
-
-                    {/* Pagination Controls */}
-                    {getTotalPages() > 1 && (
-                      <div className="mt-6 flex items-center justify-between border-t border-gray-200 pt-4">
-                        <div className="text-sm text-gray-600">
-                          Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, getFilteredAndSortedTransactions().length)} of {getFilteredAndSortedTransactions().length} transactions
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => setCurrentPage(currentPage - 1)}
-                            disabled={currentPage === 1}
-                            className={classNames(
-                              "px-3 py-2 rounded border transition-all flex items-center gap-1",
-                              currentPage === 1
-                                ? "border-gray-200 text-gray-400 cursor-not-allowed"
-                                : "border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400"
-                            )}
-                          >
-                            <ChevronLeft className="w-4 h-4" />
-                            Previous
-                          </button>
-
-                          <div className="flex items-center gap-1">
-                            {Array.from({ length: getTotalPages() }, (_, i) => i + 1).map((page) => {
-                              // Show first page, last page, current page, and pages around current
-                              const showPage = page === 1 ||
-                                             page === getTotalPages() ||
-                                             Math.abs(page - currentPage) <= 1;
-
-                              if (!showPage) {
-                                // Show ellipsis
-                                if (page === 2 && currentPage > 3) return <span key={page} className="px-2 text-gray-400">...</span>;
-                                if (page === getTotalPages() - 1 && currentPage < getTotalPages() - 2) return <span key={page} className="px-2 text-gray-400">...</span>;
-                                return null;
-                              }
-
-                              return (
-                                <button
-                                  key={page}
-                                  onClick={() => setCurrentPage(page)}
-                                  className={classNames(
-                                    "px-3 py-2 rounded border transition-all min-w-[40px]",
-                                    currentPage === page
-                                      ? "bg-[#0019ff] text-white border-[#0019ff]"
-                                      : "border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400"
-                                  )}
-                                >
-                                  {page}
-                                </button>
-                              );
-                            })}
-                          </div>
-
-                          <button
-                            onClick={() => setCurrentPage(currentPage + 1)}
-                            disabled={currentPage === getTotalPages()}
-                            className={classNames(
-                              "px-3 py-2 rounded border transition-all flex items-center gap-1",
-                              currentPage === getTotalPages()
-                                ? "border-gray-200 text-gray-400 cursor-not-allowed"
-                                : "border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400"
-                            )}
-                          >
-                            Next
-                            <ChevronRight className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                      </div>
-                    </>
-                  )}
                 </div>
               </motion.div>
             )}

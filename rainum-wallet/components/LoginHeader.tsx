@@ -44,11 +44,11 @@ export default function LoginHeader() {
               {/* Subtle hover glow */}
               <div className="absolute -inset-2 bg-gradient-to-r from-[#61dca3]/0 via-[#61dca3]/20 to-[#61b3dc]/0 rounded-lg blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <Image
-                src="/rainum-logo-green-border.svg"
+                src="/press-kit/logos/rainum-logo-white.svg"
                 alt="Rainum"
                 width={120}
-                height={120}
-                className="relative w-[120px] h-[120px] transition-transform duration-200 group-hover:scale-105"
+                height={40}
+                className="relative h-8 w-auto transition-transform duration-200 group-hover:scale-105"
                 priority
               />
             </div>
