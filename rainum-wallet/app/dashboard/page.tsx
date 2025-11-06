@@ -437,6 +437,14 @@ export default function DashboardPage() {
     const zkpFee = enableZKP ? 0.002 : 0;
     const totalCost = cleanAmount + gasFee + zkpFee;
 
+    console.log('💰 Balance check:', {
+      balance,
+      balanceType: typeof balance,
+      cleanAmount,
+      totalCost,
+      hasEnough: totalCost <= balance,
+    });
+
     if (totalCost > balance) {
       const shortfall = totalCost - balance;
       setBalanceError(`Insufficient balance. You need ${shortfall.toFixed(6)} more RAIN (including ${(gasFee + zkpFee).toFixed(6)} RAIN gas fee)`);
