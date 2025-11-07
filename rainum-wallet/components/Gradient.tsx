@@ -49,7 +49,7 @@ function BentoCard({
   return (
     <MovingGradient
       animated={false}
-      className={cn("rounded-2xl border-2 border-gray-200 bg-white h-full min-h-[280px] sm:min-h-[300px]", className)}
+      className={cn("rounded border-2 border-gray-200 bg-white h-full min-h-[280px] sm:min-h-[300px]", className)}
       gradientClassName={cn("opacity-5", gradient)}
     >
       <section className="flex h-full flex-col p-4 sm:p-6 lg:p-8">
@@ -82,7 +82,7 @@ function CreateWallet({ onClick, loading }: { onClick: () => void; loading: bool
       <button
         onClick={onClick}
         disabled={loading}
-        className="w-full group relative flex cursor-pointer items-center justify-between rounded-lg sm:rounded-xl bg-[#0019ff] p-4 sm:p-5 lg:p-6 h-[80px] sm:h-[90px] lg:h-[100px] text-xl sm:text-2xl lg:text-3xl tracking-tight text-white transition-all hover:shadow-2xl hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 border-0"
+        className="w-full group relative flex cursor-pointer items-center justify-between rounded bg-[#0019ff] p-4 sm:p-5 lg:p-6 h-[80px] sm:h-[90px] lg:h-[100px] text-xl sm:text-2xl lg:text-3xl tracking-tight text-white transition-all hover:shadow-2xl hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 border-0"
       >
         <div className="flex items-baseline gap-2">
           <span className="font-light">New</span>
@@ -118,7 +118,7 @@ function ExistingWallet({ onClick, loading, hasWallet }: { onClick: () => void; 
       <button
         onClick={onClick}
         disabled={loading}
-        className="w-full group relative flex cursor-pointer items-center justify-between rounded-lg sm:rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 p-4 sm:p-5 lg:p-6 h-[80px] sm:h-[90px] lg:h-[100px] text-xl sm:text-2xl lg:text-3xl tracking-tight text-white transition-all hover:shadow-2xl hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 border-0"
+        className="w-full group relative flex cursor-pointer items-center justify-between rounded bg-gradient-to-br from-gray-900 to-gray-800 p-4 sm:p-5 lg:p-6 h-[80px] sm:h-[90px] lg:h-[100px] text-xl sm:text-2xl lg:text-3xl tracking-tight text-white transition-all hover:shadow-2xl hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 border-0"
       >
         <div className="flex items-baseline gap-2">
           <span className="font-light">{hasWallet ? "Quick" : "Connect"}</span>
@@ -154,7 +154,7 @@ function ImportSeed({ onClick, loading }: { onClick: () => void; loading: boolea
       <button
         onClick={onClick}
         disabled={loading}
-        className="w-full group relative flex cursor-pointer items-center justify-between rounded-lg sm:rounded-xl bg-[#0019ff] p-4 sm:p-5 lg:p-6 h-[80px] sm:h-[90px] lg:h-[100px] text-xl sm:text-2xl lg:text-3xl tracking-tight text-white transition-all hover:shadow-2xl hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 border-0"
+        className="w-full group relative flex cursor-pointer items-center justify-between rounded bg-[#0019ff] p-4 sm:p-5 lg:p-6 h-[80px] sm:h-[90px] lg:h-[100px] text-xl sm:text-2xl lg:text-3xl tracking-tight text-white transition-all hover:shadow-2xl hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 border-0"
       >
         <div className="flex items-baseline gap-2">
           <span className="font-light">Import</span>
