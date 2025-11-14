@@ -10,7 +10,7 @@ export default function LoginHeader() {
   useEffect(() => {
     const checkSystemStatus = async () => {
       try {
-        const response = await fetch("http://localhost:8080/status", {
+        const response = await fetch("https://api.rainum.com/status", {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
