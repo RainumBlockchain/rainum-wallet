@@ -1101,7 +1101,7 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
 
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/htlc/create', {
+      const response = await fetch('https://api.rainum.com/htlc/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1134,7 +1134,7 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
   const fetchMySwaps = async () => {
     setRefreshing(true);
     try {
-      const response = await fetch(`http://localhost:8080/htlc/address/${walletAddress}`);
+      const response = await fetch(`https://api.rainum.com/htlc/address/${walletAddress}`);
       if (response.ok) {
         const data = await response.json();
         setMySwaps(data.htlcs || []);
@@ -1154,7 +1154,7 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
 
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/htlc/claim', {
+      const response = await fetch('https://api.rainum.com/htlc/claim', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1180,7 +1180,7 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
   const handleRefundSwap = async (contractId: string) => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/htlc/refund', {
+      const response = await fetch('https://api.rainum.com/htlc/refund', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

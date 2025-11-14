@@ -474,7 +474,7 @@ export default function StakingDashboard() {
       }
 
       // Call new withdraw rewards endpoint
-      const response = await fetch(`http://localhost:8080/validator/withdraw-rewards/${address}`, {
+      const response = await fetch(`https://api.rainum.com/validator/withdraw-rewards/${address}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
