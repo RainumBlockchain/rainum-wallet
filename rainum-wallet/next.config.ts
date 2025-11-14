@@ -8,9 +8,7 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  experimental: {
-    missingSuspenseWithCSRBailout: false,
-  },
+  output: 'standalone',
   reactStrictMode: false, // Disable to prevent WebSocket double-connection issues
   outputFileTracingRoot: '/Users/primeupint./rainum-blockchain/rainum-wallet/rainum-wallet',
   images: {
