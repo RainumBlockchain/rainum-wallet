@@ -34,8 +34,8 @@ export const NETWORKS = {
   DEVNET: {
     id: 'devnet',
     name: 'Devnet',
-    rpcUrl: 'http://localhost:8080',
-    explorerUrl: 'http://localhost:3001',
+    rpcUrl: 'https://api.rainum.com',
+    explorerUrl: 'https://explorer.rainum.com',
     chainId: '999',
     isCustom: false,
   } as Network,
