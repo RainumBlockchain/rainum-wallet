@@ -454,11 +454,23 @@ export async function registerValidator(
   tier: number
 ): Promise<any> {
   try {
+    // Generate dummy keys for now (in production, derive from wallet private key)
+    const ed25519PublicKey = '0'.repeat(64); // 32 bytes hex
+    const blsPublicKey = '0'.repeat(96); // 48 bytes hex
+    const vrfPublicKey = '0'.repeat(64); // 32 bytes hex
+
     // Stake is already in RAIN (backend uses RAIN directly)
     const res = await fetch(`${getApiBase()}/validator/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ address, stake, tier }),
+      body: JSON.stringify({
+        address,
+        stake,
+        tier,
+        ed25519_public_key_hex: ed25519PublicKey,
+        bls_public_key_hex: blsPublicKey,
+        vrf_public_key_hex: vrfPublicKey,
+      }),
     });
 
     const data = await res.json();
