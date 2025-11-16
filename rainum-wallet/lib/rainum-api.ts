@@ -245,7 +245,7 @@ export async function sendTransaction(
 
     // 🔒 SECURITY: Mnemonic is REQUIRED for all transactions (signature verification is mandatory)
     if (!mnemonic) {
-      throw new Error('Transaction signing required: Please unlock your wallet to send transactions');
+      throw new Error('WALLET_LOCKED');
     }
 
     let signature = undefined;
@@ -1172,5 +1172,202 @@ export async function getBlockchainStatus(): Promise<{
   } catch (error) {
     console.error('Failed to fetch blockchain status:', error);
     return { block_height: 0, network: 'mainnet', connected: false };
+  }
+}
+
+// ============================================================================
+// SMART CONTRACT DEPLOYMENT API
+// ============================================================================
+
+export interface DeployEVMContractRequest {
+  deployer: string;
+  bytecode: string;
+  constructor_args?: string;
+  gas_limit?: number;
+  gas_price?: number;
+  timestamp?: number;
+  nonce?: number;
+  signature?: {
+    signature_hex: string;
+    public_key_hex: string;
+  };
+}
+
+export interface DeployEVMContractResponse {
+  success: boolean;
+  contract_address?: string;
+  transaction_hash?: string;
+  gas_used?: number;
+  error?: string;
+}
+
+export interface PublishMoveModuleRequest {
+  sender: string;
+  bytecode: string;
+  gas_limit?: number;
+  timestamp?: number;
+  nonce?: number;
+  signature?: {
+    signature_hex: string;
+    public_key_hex: string;
+  };
+}
+
+export interface PublishMoveModuleResponse {
+  success: boolean;
+  module_id?: string;
+  gas_used?: number;
+  error?: string;
+}
+
+/**
+ * Deploy EVM smart contract
+ */
+export async function deployEVMContract(
+  deployer: string,
+  bytecode: string,
+  constructorArgs?: string,
+  gasLimit: number = 3000000,
+  gasPrice: number = 1,
+  mnemonic?: string,
+  accountIndex: number = 0
+): Promise<DeployEVMContractResponse> {
+  try {
+    // Get nonce and timestamp
+    const nonce = await getAccountNonce(deployer);
+    const timestamp = Math.floor(Date.now() / 1000);
+
+    let signature = undefined;
+
+    // Sign if mnemonic provided
+    if (mnemonic) {
+      const { deriveAccountFromMnemonic, securelyWipeMemory } = await import('./hd-wallet');
+      const { signTransaction: signTx, getPublicKey } = await import('./crypto');
+
+      const derivedAccount = deriveAccountFromMnemonic(mnemonic, accountIndex);
+      const privateKey = derivedAccount.privateKey;
+      const publicKey = await getPublicKey(privateKey);
+
+      // Sign deployment transaction
+      const sig = await signTx(
+        privateKey,
+        deployer,
+        '0x0000000000000000000000000000000000000000', // Contract deployment uses zero address
+        '0', // No value transfer
+        nonce,
+        timestamp,
+        gasPrice,
+        gasLimit
+      );
+
+      securelyWipeMemory(privateKey);
+      securelyWipeMemory(derivedAccount.publicKey);
+
+      signature = {
+        signature_hex: sig.signature,
+        public_key_hex: sig.publicKey,
+      };
+    }
+
+    const res = await fetch(`${getApiBase()}/contract/deploy`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        deployer,
+        bytecode,
+        constructor_args: constructorArgs,
+        gas_limit: gasLimit,
+        gas_price: gasPrice,
+        timestamp,
+        nonce,
+        signature,
+      }),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
+    }
+
+    return await res.json();
+  } catch (error: any) {
+    console.error('Failed to deploy EVM contract:', error);
+    throw error;
+  }
+}
+
+/**
+ * Publish Move module
+ */
+export async function publishMoveModule(
+  sender: string,
+  bytecode: string,
+  gasLimit: number = 3000000,
+  mnemonic?: string,
+  accountIndex: number = 0
+): Promise<PublishMoveModuleResponse> {
+  try {
+    // Get nonce and timestamp
+    const nonce = await getAccountNonce(sender);
+    const timestamp = Math.floor(Date.now() / 1000);
+
+    let signature = undefined;
+
+    // Sign if mnemonic provided
+    if (mnemonic) {
+      const { deriveAccountFromMnemonic, securelyWipeMemory } = await import('./hd-wallet');
+      const { signTransaction: signTx, getPublicKey } = await import('./crypto');
+
+      const derivedAccount = deriveAccountFromMnemonic(mnemonic, accountIndex);
+      const privateKey = derivedAccount.privateKey;
+      const publicKey = await getPublicKey(privateKey);
+
+      // Sign module publication
+      const sig = await signTx(
+        privateKey,
+        sender,
+        '0x0000000000000000000000000000000000000001', // Move module publication
+        '0',
+        nonce,
+        timestamp,
+        1, // Gas price for Move
+        gasLimit
+      );
+
+      securelyWipeMemory(privateKey);
+      securelyWipeMemory(derivedAccount.publicKey);
+
+      signature = {
+        signature_hex: sig.signature,
+        public_key_hex: sig.publicKey,
+      };
+    }
+
+    const res = await fetch(`${getApiBase()}/move/publish`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        sender,
+        bytecode,
+        gas_limit: gasLimit,
+        timestamp,
+        nonce,
+        signature,
+      }),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
+    }
+
+    return await res.json();
+  } catch (error: any) {
+    console.error('Failed to publish Move module:', error);
+    throw error;
   }
 }

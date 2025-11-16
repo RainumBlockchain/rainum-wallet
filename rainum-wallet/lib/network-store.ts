@@ -31,6 +31,14 @@ interface NetworkStore {
 
 // Default networks
 export const NETWORKS = {
+  LOCAL: {
+    id: 'local',
+    name: 'Local',
+    rpcUrl: 'http://localhost:8080',
+    explorerUrl: 'http://localhost:3000',
+    chainId: '999',
+    isCustom: false,
+  } as Network,
   DEVNET: {
     id: 'devnet',
     name: 'Devnet',
@@ -57,7 +65,10 @@ export const NETWORKS = {
   } as Network,
 };
 
-export const DEFAULT_NETWORK = NETWORKS.DEVNET;
+// Use LOCAL for development, DEVNET for production
+export const DEFAULT_NETWORK = process.env.NODE_ENV === 'development'
+  ? NETWORKS.LOCAL
+  : NETWORKS.DEVNET;
 
 export const useNetworkStore = create<NetworkStore>()(
   persist(

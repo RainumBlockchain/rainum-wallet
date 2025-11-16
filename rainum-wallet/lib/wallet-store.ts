@@ -340,6 +340,14 @@ export const useWalletStore = create<WalletState>()(
         // Don't persist balance - always fetch fresh
       }),
       skipHydration: false,
+      // ✅ CRITICAL FIX: Preserve mnemonic in memory when state rehydrates
+      // Without this, mnemonic gets overwritten with null from localStorage
+      merge: (persistedState: any, currentState: any) => ({
+        ...currentState,
+        ...persistedState,
+        // Keep in-memory mnemonic (don't overwrite with null from localStorage)
+        mnemonic: currentState.mnemonic,
+      }),
       onRehydrateStorage: () => (state) => {
         // 🔒 SECURITY: Mnemonic NOT restored from storage
 

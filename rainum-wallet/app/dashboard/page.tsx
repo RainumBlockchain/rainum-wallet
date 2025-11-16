@@ -9,7 +9,7 @@ import { useWalletStore } from "@/lib/wallet-store";
 import { useAddressBookStore } from "@/lib/address-book-store";
 import { useNetworkStore, NETWORKS } from "@/lib/network-store";
 import { toast } from "@/lib/toast-store";
-import { getTransactions, sendTransaction, requestFromFaucet, getBlockchainStatus } from "@/lib/rainum-api";
+import { getTransactions, sendTransaction, requestFromFaucet, getBlockchainStatus, deployEVMContract, publishMoveModule } from "@/lib/rainum-api";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { sessionManager } from "@/lib/session-manager";
 import { handleAutoLogout, handleLogout } from "@/lib/auth-flow";
@@ -18,6 +18,7 @@ import { formatTransactionAmount, getTransactionAddresses, getPrivacyBadge, form
 import { formatBalance } from "@/lib/format-balance";
 import { getWalletSettings, saveWalletSettings, getTransactionLimitSettings, getSessionTimeoutMs, getLoginRateLimitSettings, type WalletSettings } from "@/lib/wallet-settings";
 import { useWebSocket, useNotificationPermission } from "@/hooks/useWebSocket";
+import { useBlockchainStatus } from "@/hooks/useBlockchainStatus";
 import { TransactionCardSkeleton, BalanceSkeleton, AddressSkeleton } from "@/components/Skeleton";
 import { QRScanner } from "@/components/QRScanner";
 import SecuritySettings from "@/components/SecuritySettings";
@@ -96,6 +97,14 @@ const navigationItems = [
   { name: "Wallet", icon: Wallet },
   { name: "Transactions", icon: ArrowRightLeft },
   { name: "Staking", icon: TrendingUp },
+  {
+    name: "Smart Contracts",
+    icon: FileText,
+    submenu: [
+      { name: "EVM", icon: Code },
+      { name: "Move", icon: Shield }
+    ]
+  },
   { name: "Bridge", icon: GitBranch },
   { name: "Settings", icon: Settings },
 ];
@@ -139,6 +148,9 @@ export default function DashboardPage() {
     switchNetwork
   } = useNetworkStore();
 
+  // Get live blockchain status (block height, network, connection)
+  const blockchainStatus = useBlockchainStatus(10000); // Update every 10 seconds
+
   // Get saved addresses for current wallet only
   const savedAddresses = address ? getAddressesForWallet(address) : [];
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -170,6 +182,7 @@ export default function DashboardPage() {
   const [showReauthModal, setShowReauthModal] = useState(false);
   const [reauthPassword, setReauthPassword] = useState("");
   const [reauthError, setReauthError] = useState("");
+  const [pendingTransaction, setPendingTransaction] = useState<(() => Promise<void>) | null>(null);
 
   // QR Scanner
   const [showQRScanner, setShowQRScanner] = useState(false);
@@ -200,12 +213,132 @@ export default function DashboardPage() {
   const initialTab = searchParams.get("tab") || "Wallet";
   const [activeTab, setActiveTab] = useState(initialTab);
 
+  // Smart Contracts dropdown state
+  const [smartContractsOpen, setSmartContractsOpen] = useState(false);
+
+  // Smart Contracts template state
+  const [evmBytecode, setEvmBytecode] = useState('');
+  const [evmConstructorArgs, setEvmConstructorArgs] = useState('');
+  const [moveModuleCode, setMoveModuleCode] = useState('');
+  const [moveModuleArgs, setMoveModuleArgs] = useState('');
+
+  // Deployment state
+  const [isDeploying, setIsDeploying] = useState(false);
+  const [deploymentResult, setDeploymentResult] = useState<{
+    success: boolean;
+    type: 'evm' | 'move';
+    contractAddress?: string;
+    moduleId?: string;
+    transactionHash?: string;
+    gasUsed?: number;
+    error?: string;
+  } | null>(null);
+
   // Update URL when tab changes
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
     const params = new URLSearchParams(searchParams.toString());
     params.set("tab", tab);
     router.push(`/dashboard?${params.toString()}`, { scroll: false });
+  };
+
+  // Deploy EVM Contract
+  const handleDeployEVMContract = async () => {
+    if (!address || !mnemonic) {
+      toast.error('Please unlock your wallet first');
+      return;
+    }
+
+    if (!evmBytecode || !evmBytecode.startsWith('0x')) {
+      toast.error('Please enter valid bytecode (must start with 0x)');
+      return;
+    }
+
+    setIsDeploying(true);
+    try {
+      const result = await deployEVMContract(
+        address,
+        evmBytecode,
+        evmConstructorArgs || undefined,
+        3000000, // gas limit
+        1, // gas price
+        mnemonic,
+        0 // account index
+      );
+
+      if (result.success) {
+        setDeploymentResult({
+          success: true,
+          type: 'evm',
+          contractAddress: result.contract_address,
+          transactionHash: result.transaction_hash,
+          gasUsed: result.gas_used,
+        });
+        toast.success('Contract deployed successfully!');
+      } else {
+        throw new Error(result.error || 'Deployment failed');
+      }
+    } catch (error: any) {
+      console.error('Deployment error:', error);
+      setDeploymentResult({
+        success: false,
+        type: 'evm',
+        error: error.message || 'Failed to deploy contract',
+      });
+      toast.error(error.message || 'Failed to deploy contract');
+    } finally {
+      setIsDeploying(false);
+    }
+  };
+
+  // Publish Move Module
+  const handlePublishMoveModule = async () => {
+    if (!address || !mnemonic) {
+      toast.error('Please unlock your wallet first');
+      return;
+    }
+
+    if (!moveModuleCode) {
+      toast.error('Please enter Move module code');
+      return;
+    }
+
+    setIsDeploying(true);
+    try {
+      // For Move, bytecode should be hex-encoded. If user entered source code, we'd need to compile it first.
+      // For now, assume they enter compiled bytecode
+      const bytecode = moveModuleCode.startsWith('0x') ? moveModuleCode : `0x${moveModuleCode}`;
+
+      const result = await publishMoveModule(
+        address,
+        bytecode,
+        3000000, // gas limit
+        mnemonic,
+        0 // account index
+      );
+
+      if (result.success) {
+        setDeploymentResult({
+          success: true,
+          type: 'move',
+          moduleId: result.module_id,
+          gasUsed: result.gas_used,
+        });
+        toast.success('Move module published successfully!');
+      } else {
+        throw new Error(result.error || 'Publication failed');
+      }
+    } catch (error: any) {
+      console.error('Publication error:', error);
+      setDeploymentResult({
+        success: false,
+        type: 'move',
+        error: error.message || 'Failed to publish module',
+      });
+      toast.error(error.message || 'Failed to publish module');
+    } finally {
+      setIsDeploying(false);
+    }
   };
 
   // Header stats state
@@ -494,6 +627,8 @@ export default function DashboardPage() {
 
   // QR code visibility
   const [showQRCode, setShowQRCode] = useState(false);
+  const [showQRCodeModal, setShowQRCodeModal] = useState(false);
+  const [isLoadingQR, setIsLoadingQR] = useState(false);
 
   // Transaction history
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -709,6 +844,12 @@ export default function DashboardPage() {
       setReauthError("");
 
       toast.success("Re-authenticated", "Wallet unlocked successfully");
+
+      // If there's a pending transaction, execute it now
+      if (pendingTransaction) {
+        await pendingTransaction();
+        setPendingTransaction(null);
+      }
     } catch (error: any) {
       console.error("Re-authentication failed:", error);
       setReauthError(error.message || "Failed to decrypt wallet");
@@ -968,6 +1109,15 @@ export default function DashboardPage() {
     }
   };
 
+  const handleShowQRCode = () => {
+    setShowQRCodeModal(true);
+    setIsLoadingQR(true);
+    // Show loading for a brief moment, then reveal QR code
+    setTimeout(() => {
+      setIsLoadingQR(false);
+    }, 800);
+  };
+
   const handleShowAccountBalances = async () => {
     setShowAccountBalances(true);
 
@@ -1006,7 +1156,7 @@ export default function DashboardPage() {
       return;
     }
 
-    toast.info("Requesting tokens...", "Requesting 10,000,000 RAIN from faucet");
+    toast.info("Requesting tokens...", "Requesting 100 RAIN from faucet");
 
     try {
       const result = await requestFromFaucet(address);
@@ -1014,7 +1164,7 @@ export default function DashboardPage() {
       if (result.success) {
         toast.success(
           "Faucet request successful!",
-          `Received ${result.amount || 10000000} RAIN tokens`,
+          `Received ${result.amount || 100} RAIN tokens`,
           5000
         );
 
@@ -1128,8 +1278,11 @@ export default function DashboardPage() {
       return;
     }
 
+    // ✅ Auto-unlock: If mnemonic is missing, prompt for password instead of error
     if (!mnemonic) {
-      toast.error("Error", "Wallet mnemonic not found. Please re-login to your wallet.");
+      toast.info("Unlock Required", "Please enter your password to continue");
+      setPendingTransaction(() => handleFinalSend);
+      setShowReauthModal(true);
       return;
     }
 
@@ -1196,6 +1349,14 @@ export default function DashboardPage() {
         );
       }
     } catch (error: any) {
+      // ✅ Auto-unlock: If wallet is locked, prompt for password
+      if (error.message === 'WALLET_LOCKED') {
+        toast.info("Unlock Required", "Please enter your password to send transaction");
+        setPendingTransaction(() => handleFinalSend);
+        setShowReauthModal(true);
+        return;
+      }
+
       // Show error toast
       toast.error(
         "Transaction failed",
@@ -1223,6 +1384,17 @@ export default function DashboardPage() {
   return (
     <ProtectedRoute>
       <div className="bg-white min-h-screen">
+      {/* Security Alert Banner */}
+      <div className="bg-yellow-500">
+        <div className="max-w-7xl mx-auto px-4 py-2.5">
+          <p className="text-xs text-black text-center font-medium">
+            Protect your funds. Make sure the URL is{' '}
+            <Lock className="inline w-3 h-3 mb-0.5 mx-1" />{' '}
+            <span className="font-bold bg-yellow-600 px-2 py-0.5 rounded-[4px]">https://wallet.rainum.com</span>
+          </p>
+        </div>
+      </div>
+
       {/* Security Dialog */}
       <Dialog open={showSecurityDialog} onClose={() => setShowSecurityDialog(false)} className="relative z-50">
         <DialogBackdrop className="fixed inset-0 bg-gray-900/80 transition-opacity" />
@@ -1366,6 +1538,90 @@ export default function DashboardPage() {
                   Continue
                 </button>
               </div>
+            </DialogPanel>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* QR Code Modal */}
+      <Dialog open={showQRCodeModal} onClose={() => { setShowQRCodeModal(false); setIsLoadingQR(false); }} className="relative z-50">
+        <DialogBackdrop className="fixed inset-0 bg-gray-900/80 transition-opacity" />
+        <div className="fixed inset-0 z-10 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <DialogPanel className="relative transform overflow-hidden rounded-[4px] bg-white px-8 py-8 shadow-xl transition-all w-full max-w-md">
+              {/* Close button */}
+              <button
+                onClick={() => { setShowQRCodeModal(false); setIsLoadingQR(false); }}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              {isLoadingQR ? (
+                /* Loading State */
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex flex-col items-center justify-center py-12"
+                >
+                  <div className="w-16 h-16 mb-6 rounded-[4px] bg-[#0019ff] flex items-center justify-center">
+                    <div className="relative w-8 h-8">
+                      <div className="absolute inset-0 border-2 border-white/20 rounded-full"></div>
+                      <div className="absolute inset-0 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-bold text-black mb-2">Generating QR Code</h3>
+                  <p className="text-sm text-gray-500">Please wait...</p>
+                </motion.div>
+              ) : (
+                /* QR Code Content */
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {/* Header */}
+                  <div className="text-center mb-6">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-[4px] bg-[#0019ff] flex items-center justify-center">
+                      <QrCode className="w-8 h-8 text-white" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-black mb-2">Receive RAIN</h3>
+                    <p className="text-sm text-gray-500">Scan QR code or copy address</p>
+                  </div>
+
+                  {/* QR Code */}
+                  <div className="flex justify-center mb-6">
+                    <motion.div
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.1, duration: 0.3 }}
+                      className="bg-white p-4 rounded-[4px] border-2 border-gray-200"
+                    >
+                      {address && <QRCode value={address} size={200} />}
+                    </motion.div>
+                  </div>
+
+                  {/* Address */}
+                  <div className="mb-6">
+                    <p className="text-xs uppercase tracking-wider font-semibold text-gray-500 mb-2">Wallet Address</p>
+                    <div className="bg-gray-50 border border-gray-200 rounded-[4px] p-3">
+                      <p className="text-sm font-mono text-black break-all">{address}</p>
+                    </div>
+                  </div>
+
+                  {/* Copy Button */}
+                  <button
+                    onClick={() => {
+                      handleCopyAddress();
+                      setTimeout(() => setShowQRCodeModal(false), 1500);
+                    }}
+                    className="w-full bg-[#0019ff] text-white font-semibold py-3 px-6 rounded-[4px] hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                  >
+                    {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    {copied ? "Copied!" : "Copy Address"}
+                  </button>
+                </motion.div>
+              )}
             </DialogPanel>
           </div>
         </div>
@@ -1713,24 +1969,83 @@ export default function DashboardPage() {
                     <ul role="list" className="-mx-2 space-y-1">
                       {navigationItems.map((item) => (
                         <li key={item.name}>
-                          <button
-                            onClick={() => handleTabChange(item.name)}
-                            className={classNames(
-                              activeTab === item.name
-                                ? "bg-black text-white"
-                                : "text-gray-700 hover:bg-gray-100 hover:text-black",
-                              "group flex gap-x-3 rounded-[4px] p-3 text-sm font-semibold w-full transition-colors"
-                            )}
-                          >
-                            <item.icon
-                              aria-hidden="true"
-                              className={classNames(
-                                activeTab === item.name ? "text-white" : "text-gray-400 group-hover:text-black",
-                                "size-5 shrink-0"
+                          {(item as any).submenu ? (
+                            // Item with dropdown
+                            <div>
+                              <button
+                                onClick={() => setSmartContractsOpen(!smartContractsOpen)}
+                                className={classNames(
+                                  (activeTab === "EVM" || activeTab === "Move")
+                                    ? "bg-black text-white"
+                                    : "text-gray-700 hover:bg-gray-100 hover:text-black",
+                                  "group flex items-center justify-between gap-x-3 rounded-[4px] p-3 text-sm font-semibold w-full transition-colors"
+                                )}
+                              >
+                                <div className="flex items-center gap-x-3">
+                                  <item.icon
+                                    aria-hidden="true"
+                                    className={classNames(
+                                      (activeTab === "EVM" || activeTab === "Move") ? "text-white" : "text-gray-400 group-hover:text-black",
+                                      "size-5 shrink-0"
+                                    )}
+                                  />
+                                  {item.name}
+                                </div>
+                                <ChevronDown
+                                  className={classNames(
+                                    smartContractsOpen ? "rotate-180" : "",
+                                    "size-4 transition-transform"
+                                  )}
+                                />
+                              </button>
+                              {smartContractsOpen && (
+                                <ul className="mt-1 ml-6 space-y-1">
+                                  {(item as any).submenu.map((subItem: any) => (
+                                    <li key={subItem.name}>
+                                      <button
+                                        onClick={() => handleTabChange(subItem.name)}
+                                        className={classNames(
+                                          activeTab === subItem.name
+                                            ? "bg-[#0019ff] text-white font-bold"
+                                            : "text-gray-700 hover:bg-gray-100 hover:text-black",
+                                          "group flex gap-x-3 rounded-[4px] p-2.5 text-sm w-full transition-colors"
+                                        )}
+                                      >
+                                        <subItem.icon
+                                          aria-hidden="true"
+                                          className={classNames(
+                                            activeTab === subItem.name ? "text-white" : "text-gray-400 group-hover:text-black",
+                                            "size-4 shrink-0"
+                                          )}
+                                        />
+                                        {subItem.name}
+                                      </button>
+                                    </li>
+                                  ))}
+                                </ul>
                               )}
-                            />
-                            {item.name}
-                          </button>
+                            </div>
+                          ) : (
+                            // Regular item without dropdown
+                            <button
+                              onClick={() => handleTabChange(item.name)}
+                              className={classNames(
+                                activeTab === item.name
+                                  ? "bg-black text-white"
+                                  : "text-gray-700 hover:bg-gray-100 hover:text-black",
+                                "group flex gap-x-3 rounded-[4px] p-3 text-sm font-semibold w-full transition-colors"
+                              )}
+                            >
+                              <item.icon
+                                aria-hidden="true"
+                                className={classNames(
+                                  activeTab === item.name ? "text-white" : "text-gray-400 group-hover:text-black",
+                                  "size-5 shrink-0"
+                                )}
+                              />
+                              {item.name}
+                            </button>
+                          )}
                         </li>
                       ))}
                     </ul>
@@ -2438,24 +2753,83 @@ export default function DashboardPage() {
                 <ul role="list" className="-mx-2 space-y-1">
                   {navigationItems.map((item) => (
                     <li key={item.name}>
-                      <button
-                        onClick={() => handleTabChange(item.name)}
-                        className={classNames(
-                          activeTab === item.name
-                            ? "bg-black text-white"
-                            : "text-gray-700 hover:bg-gray-100 hover:text-black",
-                          "group flex gap-x-3 rounded-[4px] p-3 text-sm font-semibold w-full transition-colors"
-                        )}
-                      >
-                        <item.icon
-                          aria-hidden="true"
-                          className={classNames(
-                            activeTab === item.name ? "text-white" : "text-gray-400 group-hover:text-black",
-                            "size-5 shrink-0"
+                      {(item as any).submenu ? (
+                        // Item with dropdown
+                        <div>
+                          <button
+                            onClick={() => setSmartContractsOpen(!smartContractsOpen)}
+                            className={classNames(
+                              (activeTab === "EVM" || activeTab === "Move")
+                                ? "bg-black text-white"
+                                : "text-gray-700 hover:bg-gray-100 hover:text-black",
+                              "group flex items-center justify-between gap-x-3 rounded-[4px] p-3 text-sm font-semibold w-full transition-colors"
+                            )}
+                          >
+                            <div className="flex items-center gap-x-3">
+                              <item.icon
+                                aria-hidden="true"
+                                className={classNames(
+                                  (activeTab === "EVM" || activeTab === "Move") ? "text-white" : "text-gray-400 group-hover:text-black",
+                                  "size-5 shrink-0"
+                                )}
+                              />
+                              {item.name}
+                            </div>
+                            <ChevronDown
+                              className={classNames(
+                                smartContractsOpen ? "rotate-180" : "",
+                                "size-4 transition-transform"
+                              )}
+                            />
+                          </button>
+                          {smartContractsOpen && (
+                            <ul className="mt-1 ml-6 space-y-1">
+                              {(item as any).submenu.map((subItem: any) => (
+                                <li key={subItem.name}>
+                                  <button
+                                    onClick={() => handleTabChange(subItem.name)}
+                                    className={classNames(
+                                      activeTab === subItem.name
+                                        ? "bg-[#0019ff] text-white font-bold"
+                                        : "text-gray-700 hover:bg-gray-100 hover:text-black",
+                                      "group flex gap-x-3 rounded-[4px] p-2.5 text-sm w-full transition-colors"
+                                    )}
+                                  >
+                                    <subItem.icon
+                                      aria-hidden="true"
+                                      className={classNames(
+                                        activeTab === subItem.name ? "text-white" : "text-gray-400 group-hover:text-black",
+                                        "size-4 shrink-0"
+                                      )}
+                                    />
+                                    {subItem.name}
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
                           )}
-                        />
-                        {item.name}
-                      </button>
+                        </div>
+                      ) : (
+                        // Regular item without dropdown
+                        <button
+                          onClick={() => handleTabChange(item.name)}
+                          className={classNames(
+                            activeTab === item.name
+                              ? "bg-black text-white"
+                              : "text-gray-700 hover:bg-gray-100 hover:text-black",
+                            "group flex gap-x-3 rounded-[4px] p-3 text-sm font-semibold w-full transition-colors"
+                          )}
+                        >
+                          <item.icon
+                            aria-hidden="true"
+                            className={classNames(
+                              activeTab === item.name ? "text-white" : "text-gray-400 group-hover:text-black",
+                              "size-5 shrink-0"
+                            )}
+                          />
+                          {item.name}
+                        </button>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -2760,13 +3134,13 @@ export default function DashboardPage() {
                   className="space-y-8"
                 >
                 {/* Main Balance Card */}
-                <div className="bg-white border border-gray-200 rounded p-8 shadow-sm hover:shadow-md transition-shadow duration-300">
+                <div className="bg-white border border-gray-300 rounded-[4px] p-8 transition-shadow duration-300">
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h2 className="text-3xl font-bold text-black tracking-tight">Your Wallet</h2>
                       <p className="text-gray-500 text-sm mt-1">Manage your RAIN tokens</p>
                     </div>
-                    <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded">
+                    <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-[4px]">
                       <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                       <span className="text-xs font-semibold text-green-700">Active</span>
                     </div>
@@ -2774,9 +3148,9 @@ export default function DashboardPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Balance Card */}
-                    <div className="group relative bg-gradient-to-br from-[#0019ff] via-blue-800 to-black border border-blue-400/30 rounded p-6 shadow-xl shadow-[#0019ff]/20 hover:shadow-[#0019ff]/30 transition-all duration-300">
+                    <div className="group relative bg-[#0019ff] border-none rounded-[4px] p-6 transition-all duration-300">
                       <div className="flex items-start justify-between mb-4">
-                        <div className="w-10 h-10 rounded bg-white/10 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-[4px] bg-white/10 flex items-center justify-center">
                           <Wallet className="w-5 h-5 text-white" />
                         </div>
                         <button
@@ -2799,7 +3173,7 @@ export default function DashboardPage() {
                         </button>
                       </div>
                       <p className="text-xs uppercase tracking-wider font-semibold text-white/90 mb-2">Total Balance</p>
-                      <div className="space-y-1">
+                      <div className="space-y-3">
                         {accounts.length > 1 ? (
                           <button
                             onClick={handleShowAccountBalances}
@@ -2836,80 +3210,158 @@ export default function DashboardPage() {
                             }
                           </button>
                         )}
+                        {/* Extra Info */}
+                        <div className="pt-3 border-t border-white/10 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-white/60">Active Accounts</span>
+                            <span className="text-xs font-semibold text-white/90">{accounts.length}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-white/60">Total Transactions</span>
+                            <span className="text-xs font-semibold text-white/90">{transactions.length}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-white/60">Last Updated</span>
+                            <span className="text-xs font-semibold text-white/90">{new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
                     {/* Address Card */}
-                    <div className="group relative bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded p-6 hover:shadow-md transition-all duration-300 hover:border-gray-300">
+                    <div className="group relative bg-white border border-gray-300 rounded-[4px] p-6 transition-all duration-300">
                       <div className="flex items-start justify-between mb-4">
-                        <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center">
-                          <Copy className="w-5 h-5 text-gray-600" />
+                        <div className="w-10 h-10 rounded-[4px] bg-gray-100 flex items-center justify-center">
+                          <Copy className="w-5 h-5 text-black" />
                         </div>
                         {copied && (
-                          <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded font-medium">
+                          <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-[4px] font-medium">
                             Copied!
                           </span>
                         )}
                       </div>
                       <p className="text-xs uppercase tracking-wider font-semibold text-gray-500 mb-2">Wallet Address</p>
-                      <p className="text-sm font-mono text-black truncate mb-3 bg-gray-50 px-3 py-2 rounded border border-gray-200">{address}</p>
-                      <button
-                        onClick={handleCopyAddress}
-                        className="text-xs text-[#0019ff] hover:text-blue-700 font-semibold flex items-center gap-1 transition-colors group-hover:gap-2 duration-300"
-                      >
-                        {copied ? <Check size={12} /> : <Copy size={12} />}
-                        {copied ? "Copied" : "Copy Address"}
-                      </button>
+                      <p className="text-sm font-mono text-black mb-3 bg-gray-50 px-3 py-2 rounded-[4px] border border-gray-200">
+                        {address.slice(0, 6)}...{address.slice(-4)}
+                      </p>
+                      <div className="flex items-center gap-2 mb-3">
+                        <button
+                          onClick={handleCopyAddress}
+                          className="text-xs text-[#0019ff] hover:text-blue-700 font-semibold flex items-center gap-1 transition-colors"
+                        >
+                          {copied ? <Check size={12} /> : <Copy size={12} />}
+                          {copied ? "Copied" : "Copy"}
+                        </button>
+                        <button
+                          onClick={handleShowQRCode}
+                          className="text-xs text-[#0019ff] hover:text-blue-700 font-semibold flex items-center gap-1 transition-colors"
+                        >
+                          <QrCode size={12} />
+                          QR Code
+                        </button>
+                      </div>
+                      {/* Extra Info */}
+                      <div className="pt-3 border-t border-gray-200 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-500">Network</span>
+                          <span className="text-xs font-semibold text-black">{currentNetwork.name}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-500">Account Type</span>
+                          <span className="text-xs font-semibold text-black">HD Wallet</span>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Network Card */}
-                    <div className="group relative bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded p-6 hover:shadow-md transition-all duration-300 hover:border-gray-300">
+                    <div className="group relative bg-white border border-gray-300 rounded-[4px] p-6 transition-all duration-300">
                       <div className="flex items-start justify-between mb-4">
-                        <div className="w-10 h-10 rounded bg-green-50 flex items-center justify-center">
-                          <GitBranch className="w-5 h-5 text-green-600" />
+                        <div className={`w-10 h-10 rounded-[4px] flex items-center justify-center ${
+                          blockchainStatus.connected ? 'bg-gray-100' : 'bg-gray-100'
+                        }`}>
+                          <GitBranch className={`w-5 h-5 ${
+                            blockchainStatus.connected ? 'text-[#0019ff]' : 'text-black'
+                          }`} />
                         </div>
                       </div>
                       <p className="text-xs uppercase tracking-wider font-semibold text-gray-500 mb-2">Network Status</p>
-                      <p className="text-lg font-bold text-black mb-2">Rainum Mainnet</p>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1.5 bg-green-50 px-2.5 py-1 rounded">
-                          <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-                          <span className="text-xs font-semibold text-green-700">Connected</span>
+                      <p className="text-lg font-bold text-black mb-3">
+                        Rainum {blockchainStatus.networkName}
+                      </p>
+                      <div className="flex items-center gap-2 mb-3">
+                        {blockchainStatus.loading ? (
+                          <div className="flex items-center gap-1.5 bg-gray-100 px-2.5 py-1 rounded-[4px]">
+                            <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
+                            <span className="text-xs font-semibold text-gray-600">Loading...</span>
+                          </div>
+                        ) : blockchainStatus.connected ? (
+                          <>
+                            <div className="flex items-center gap-1.5 bg-green-50 px-2.5 py-1 rounded-[4px]">
+                              <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                              <span className="text-xs font-semibold text-green-700">Connected</span>
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              • Block #{blockchainStatus.blockHeight.toLocaleString()}
+                            </div>
+                          </>
+                        ) : (
+                          <div className="flex items-center gap-1.5 bg-red-50 px-2.5 py-1 rounded-[4px]">
+                            <div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
+                            <span className="text-xs font-semibold text-red-700">Offline</span>
+                          </div>
+                        )}
+                      </div>
+                      {/* Extra Info */}
+                      <div className="pt-3 border-t border-gray-200 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-500">Block Time</span>
+                          <span className="text-xs font-semibold text-black">~12s</span>
                         </div>
-                        <div className="text-xs text-gray-400">• Block #1,234,567</div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-500">Chain ID</span>
+                          <span className="text-xs font-semibold text-black">{currentNetwork.chainId}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-500">Last Synced</span>
+                          <span className="text-xs font-semibold text-black">{new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Quick Actions */}
-                <div className="bg-white border border-gray-200 rounded p-6 shadow-sm">
-                  <h3 className="text-lg font-bold text-black mb-4">Quick Actions</h3>
+                <div className="bg-white border border-gray-300 rounded-[4px] p-5">
+                  <h3 className="text-base font-bold text-black mb-3">Quick Actions</h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {/* Send */}
                     <button
                       onClick={() => handleTabChange("Transactions")}
-                      className="flex flex-col items-center gap-2 p-4 rounded border border-gray-200 hover:border-[#0019ff] hover:bg-blue-50/50 transition-all duration-200 group"
+                      className="flex flex-col items-center gap-2 p-3 rounded-[4px] bg-white border border-gray-200 hover:border-[#0019ff] hover:bg-blue-50/30 transition-all duration-200 group"
                     >
-                      <ArrowRightLeft className="w-5 h-5 text-gray-600 group-hover:text-[#0019ff] transition-colors" />
-                      <span className="text-sm font-medium text-gray-700 group-hover:text-[#0019ff] transition-colors">Send</span>
+                      <ArrowRightLeft className="w-5 h-5 text-gray-700 group-hover:text-[#0019ff] transition-colors" />
+                      <span className="text-xs font-medium text-gray-700 group-hover:text-[#0019ff] transition-colors">Send</span>
                     </button>
+                    {/* Receive */}
                     <button
                       onClick={() => handleTabChange("Transactions")}
-                      className="flex flex-col items-center gap-2 p-4 rounded border border-gray-200 hover:border-[#0019ff] hover:bg-blue-50/50 transition-all duration-200 group"
+                      className="flex flex-col items-center gap-2 p-3 rounded-[4px] bg-white border border-gray-200 hover:border-[#0019ff] hover:bg-blue-50/30 transition-all duration-200 group"
                     >
-                      <Copy className="w-5 h-5 text-gray-600 group-hover:text-[#0019ff] transition-colors" />
-                      <span className="text-sm font-medium text-gray-700 group-hover:text-[#0019ff] transition-colors">Receive</span>
+                      <Copy className="w-5 h-5 text-gray-700 group-hover:text-[#0019ff] transition-colors" />
+                      <span className="text-xs font-medium text-gray-700 group-hover:text-[#0019ff] transition-colors">Receive</span>
                     </button>
-                    <button className="flex flex-col items-center gap-2 p-4 rounded border border-gray-200 hover:border-[#0019ff] hover:bg-blue-50/50 transition-all duration-200 group">
-                      <RefreshCw className="w-5 h-5 text-gray-600 group-hover:text-[#0019ff] transition-colors" />
-                      <span className="text-sm font-medium text-gray-700 group-hover:text-[#0019ff] transition-colors">Swap</span>
+                    {/* Swap */}
+                    <button className="flex flex-col items-center gap-2 p-3 rounded-[4px] bg-white border border-gray-200 hover:border-[#0019ff] hover:bg-blue-50/30 transition-all duration-200 group">
+                      <RefreshCw className="w-5 h-5 text-gray-700 group-hover:text-[#0019ff] transition-colors" />
+                      <span className="text-xs font-medium text-gray-700 group-hover:text-[#0019ff] transition-colors">Swap</span>
                     </button>
+                    {/* Bridge */}
                     <button
                       onClick={() => handleTabChange("Bridge")}
-                      className="flex flex-col items-center gap-2 p-4 rounded border border-gray-200 hover:border-[#0019ff] hover:bg-blue-50/50 transition-all duration-200 group"
+                      className="flex flex-col items-center gap-2 p-3 rounded-[4px] bg-white border border-gray-200 hover:border-[#0019ff] hover:bg-blue-50/30 transition-all duration-200 group"
                     >
-                      <GitBranch className="w-5 h-5 text-gray-600 group-hover:text-[#0019ff] transition-colors" />
-                      <span className="text-sm font-medium text-gray-700 group-hover:text-[#0019ff] transition-colors">Bridge</span>
+                      <GitBranch className="w-5 h-5 text-gray-700 group-hover:text-[#0019ff] transition-colors" />
+                      <span className="text-xs font-medium text-gray-700 group-hover:text-[#0019ff] transition-colors">Bridge</span>
                     </button>
                   </div>
                 </div>
@@ -3741,6 +4193,426 @@ export default function DashboardPage() {
                 transition={{ duration: 0.3 }}
               >
                 <StakingDashboard />
+              </motion.div>
+            )}
+
+            {/* EVM Contracts View */}
+            {activeTab === "EVM" && (
+              <motion.div
+                key="smart-contracts"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-6"
+              >
+                {/* EVM Contracts Header */}
+                <div className="bg-white border border-gray-200 rounded-[4px] shadow-sm overflow-hidden">
+                  <div className="bg-[#0019ff] px-8 py-6">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-white/10 backdrop-blur p-4 rounded-[4px] border border-white/20">
+                        <Code className="w-8 h-8 text-white" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-white">EVM Smart Contracts</h2>
+                        <p className="text-white/80 text-sm mt-1">Deploy Solidity contracts to Rainum blockchain</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Content Area */}
+                  <div className="p-8">
+                    <div className="max-w-4xl mx-auto space-y-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-900">Deploy EVM Contract</h3>
+                            <p className="text-gray-600 text-sm mt-1">Deploy Solidity smart contracts to Rainum blockchain</p>
+                          </div>
+                          <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 border border-gray-300 rounded-[4px]">
+                            <Code className="w-4 h-4 text-gray-700" />
+                            <span className="text-sm font-medium text-gray-900">EVM Compatible</span>
+                          </div>
+                        </div>
+
+                        {/* Contract Templates */}
+                        <div className="space-y-3">
+                          <h4 className="text-sm font-semibold text-gray-900">Contract Templates</h4>
+                          <div className="grid grid-cols-3 gap-3">
+                            <button
+                              onClick={() => setEvmBytecode('0x608060405234801561001057600080fd5b50610150806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c80632e64cec11461003b5780636057361d14610059575b600080fd5b610043610075565b60405161005091906100d9565b60405180910390f35b610073600480360381019061006e919061009d565b61007e565b005b60008054905090565b8060008190555050565b60008135905061009781610103565b92915050565b6000602082840312156100b3576100b26100fe565b5b60006100c184828501610088565b91505092915050565b6100d3816100f4565b82525050565b60006020820190506100ee60008301846100ca565b92915050565b6000819050919050565b600080fd5b61010c816100f4565b811461011757600080fd5b5056fea264697066735822122000000000000000000000000000000000000000000000000000000000000000064736f6c63430008070033')}
+                              className="px-4 py-3 bg-white border border-gray-300 rounded-[4px] hover:border-[#0019ff] hover:bg-gray-50 transition-all text-left"
+                            >
+                              <div className="text-sm font-semibold text-gray-900">Simple Storage</div>
+                              <div className="text-xs text-gray-500 mt-1">Store & retrieve value</div>
+                            </button>
+
+                            <button
+                              onClick={() => setEvmBytecode('0x60806040523480156200001157600080fd5b506040516200123838038062001238833981810160405281019062000037919062000146565b8181816000908051906020019062000051929190620000db565b5080600190805190602001906200006a929190620000db565b50505050505062000261565b600080fd5b600080fd5b6000601f19601f8301169050919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b620000d08262000085565b810181811067ffffffffffffffff82111715620000f257620000f162000096565b5b80604052505056fe608060405234801561001057600080fd5b50610150806100206000396000f3fe')}
+                              className="px-4 py-3 bg-white border border-gray-300 rounded-[4px] hover:border-[#0019ff] hover:bg-gray-50 transition-all text-left"
+                            >
+                              <div className="text-sm font-semibold text-gray-900">ERC-20 Token</div>
+                              <div className="text-xs text-gray-500 mt-1">Fungible token</div>
+                            </button>
+
+                            <button
+                              onClick={() => setEvmBytecode('0x608060405234801561001057600080fd5b50610150806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c8063a9059cbb1461003b578063dd62ed3e14610057575b600080fd5b61005560048036038101906100509190610098565b610073565b005b610071600480360381019061006c91906100d4565b610088565b005b505050565b60009392505050565b600080fd5b600080fd5b6000819050919050565b6100a78161009a565b82525050565b60006020820190506100c2600083018461009e565b92915050565b6100d18161009a565b81146100dc57600080fd5b5056fea264697066735822122000000000000000000000000000000000000000000000000000000000000000064736f6c63430008070033')}
+                              className="px-4 py-3 bg-white border border-gray-300 rounded-[4px] hover:border-[#0019ff] hover:bg-gray-50 transition-all text-left"
+                            >
+                              <div className="text-sm font-semibold text-gray-900">ERC-721 NFT</div>
+                              <div className="text-xs text-gray-500 mt-1">Non-fungible token</div>
+                            </button>
+
+                            <button
+                              onClick={() => setEvmBytecode('0x608060405234801561001057600080fd5b50610150806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c806315dacbea1461003b5780635c19a95c14610059575b600080fd5b610043610075565b60405161005091906100d9565b60405180910390f35b610073600480360381019061006e919061009d565b61007e565b005b60008054905090565b8060008190555050565b60008135905061009781610103565b92915050565b6000602082840312156100b3576100b26100fe565b5b60006100c184828501610088565b91505092915050565b6100d3816100f4565b82525050565b60006020820190506100ee60008301846100ca565b92915050565b6000819050919050565b600080fd5b61010c816100f4565b811461011757600080fd5b5056fea264697066735822122000000000000000000000000000000000000000000000000000000000000000064736f6c63430008070033')}
+                              className="px-4 py-3 bg-white border border-gray-300 rounded-[4px] hover:border-[#0019ff] hover:bg-gray-50 transition-all text-left"
+                            >
+                              <div className="text-sm font-semibold text-gray-900">Voting Contract</div>
+                              <div className="text-xs text-gray-500 mt-1">Decentralized voting</div>
+                            </button>
+
+                            <button
+                              onClick={() => setEvmBytecode('0x608060405234801561001057600080fd5b50610150806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c8063d0e30db01461003b578063e941fa7814610045575b600080fd5b610043610061565b005b61005f600480360381019061005a919061009d565b61006b565b005b3460008190555050565b505050565b60008135905061007f81610103565b92915050565b60006020828403121561009b5761009a6100fe565b5b60006100a984828501610070565b91505092915050565b6100bb816100f4565b82525050565b60006020820190506100d660008301846100b2565b92915050565b6000819050919050565b600080fd5b6100f4816100dc565b811461011757600080fd5b5056fea264697066735822122000000000000000000000000000000000000000000000000000000000000000064736f6c63430008070033')}
+                              className="px-4 py-3 bg-white border border-gray-300 rounded-[4px] hover:border-[#0019ff] hover:bg-gray-50 transition-all text-left"
+                            >
+                              <div className="text-sm font-semibold text-gray-900">Escrow Contract</div>
+                              <div className="text-xs text-gray-500 mt-1">Secure payments</div>
+                            </button>
+
+                            <button
+                              onClick={() => setEvmBytecode('0x608060405234801561001057600080fd5b50610150806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c8063c6888fa11461003b578063e75235b814610057575b600080fd5b61005560048036038101906100509190610098565b610073565b005b61005f61007d565b60405161006a91906100ad565b60405180910390f35b5050565b60008054905090565b60008135905061009281610103565b92915050565b6000602082840312156100ae576100ad6100fe565b5b60006100bc84828501610083565b91505092915050565b6100ce816100f4565b82525050565b60006020820190506100e960008301846100c5565b92915050565b6000819050919050565b600080fd5b610107816100f0565b811461011257600080fd5b5056fea264697066735822122000000000000000000000000000000000000000000000000000000000000000064736f6c63430008070033')}
+                              className="px-4 py-3 bg-white border border-gray-300 rounded-[4px] hover:border-[#0019ff] hover:bg-gray-50 transition-all text-left"
+                            >
+                              <div className="text-sm font-semibold text-gray-900">MultiSig Wallet</div>
+                              <div className="text-xs text-gray-500 mt-1">Multi-signature</div>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Bytecode Input */}
+                        <div className="space-y-2">
+                          <label className="block text-sm font-semibold text-gray-900">
+                            Contract Bytecode
+                            <span className="text-red-500 ml-1">*</span>
+                          </label>
+                          <textarea
+                            value={evmBytecode}
+                            onChange={(e) => setEvmBytecode(e.target.value)}
+                            placeholder="0x60806040523480156100..."
+                            className="w-full px-4 py-3 border border-gray-300 rounded-[4px] focus:ring-2 focus:ring-[#0019ff] focus:border-transparent font-mono text-sm resize-none text-gray-900 placeholder:text-gray-500"
+                            rows={8}
+                          />
+                          <p className="text-xs text-gray-500">
+                            Paste compiled contract bytecode (must start with 0x)
+                          </p>
+                        </div>
+
+                        {/* Constructor Arguments */}
+                        <div className="space-y-2">
+                          <label className="block text-sm font-semibold text-gray-900">
+                            Constructor Arguments
+                            <span className="text-gray-400 ml-1 font-normal">(Optional)</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={evmConstructorArgs}
+                            onChange={(e) => setEvmConstructorArgs(e.target.value)}
+                            placeholder="0x000000000000000000000000..."
+                            className="w-full px-4 py-3 border border-gray-300 rounded-[4px] focus:ring-2 focus:ring-[#0019ff] focus:border-transparent font-mono text-sm text-gray-900 placeholder:text-gray-500"
+                          />
+                          <p className="text-xs text-gray-500">
+                            ABI-encoded constructor parameters (if your contract has a constructor)
+                          </p>
+                        </div>
+
+                        {/* Gas Settings */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <label className="block text-sm font-semibold text-gray-900">
+                              Gas Limit
+                            </label>
+                            <input
+                              type="number"
+                              placeholder="3000000"
+                              defaultValue="3000000"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-[4px] focus:ring-2 focus:ring-[#0019ff] focus:border-transparent text-gray-900 placeholder:text-gray-500"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="block text-sm font-semibold text-gray-900">
+                              Gas Price (RAIN)
+                            </label>
+                            <input
+                              type="number"
+                              placeholder="1"
+                              defaultValue="1"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-[4px] focus:ring-2 focus:ring-[#0019ff] focus:border-transparent text-gray-900 placeholder:text-gray-500"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Estimated Cost */}
+                        <div className="bg-gray-50 border border-gray-200 rounded-[4px] p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Zap className="w-5 h-5 text-gray-700" />
+                              <span className="font-semibold text-gray-900">Estimated Deployment Cost</span>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-2xl font-bold text-gray-900">1 RAIN</div>
+                              <div className="text-sm text-gray-500">≈ $0.10 USD</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Deploy Button */}
+                        <div className="flex gap-3">
+                          <button
+                            onClick={handleDeployEVMContract}
+                            disabled={isDeploying || !evmBytecode}
+                            className="flex-1 bg-[#0019ff] text-white px-6 py-4 rounded-[4px] font-semibold hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <Code className="w-5 h-5" />
+                            {isDeploying ? 'Deploying...' : 'Deploy Contract'}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setEvmBytecode('');
+                              setEvmConstructorArgs('');
+                            }}
+                            className="px-6 py-4 border border-gray-300 text-gray-700 rounded-[4px] font-semibold hover:bg-gray-50 transition-all"
+                          >
+                            Clear
+                          </button>
+                        </div>
+
+                        {/* Info Notice */}
+                        <div className="bg-gray-50 border border-gray-200 rounded-[4px] p-4">
+                          <div className="flex gap-3">
+                            <Info className="w-5 h-5 text-gray-700 flex-shrink-0 mt-0.5" />
+                            <div className="text-sm text-gray-900">
+                              <p className="font-semibold mb-1">Deployment Tips:</p>
+                              <ul className="space-y-1 text-gray-700">
+                                <li>• Compile your Solidity contract using Remix, Hardhat, or Foundry</li>
+                                <li>• Use the bytecode from the compilation output</li>
+                                <li>• Constructor arguments must be ABI-encoded</li>
+                                <li>• Deployment is irreversible - verify bytecode before deploying</li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Move Contracts View */}
+            {activeTab === "Move" && (
+              <motion.div
+                key="move-contracts"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-6"
+              >
+                {/* Move Contracts Header */}
+                <div className="bg-white border border-gray-200 rounded-[4px] shadow-sm overflow-hidden">
+                  <div className="bg-black px-8 py-6">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-white/10 backdrop-blur p-4 rounded-[4px] border border-white/20">
+                        <Shield className="w-8 h-8 text-white" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-white">Move Modules</h2>
+                        <p className="text-white/80 text-sm mt-1">Deploy formally verified Move modules to Rainum</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Content Area */}
+                  <div className="p-8">
+                    <div className="max-w-4xl mx-auto space-y-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-900">Publish Move Module</h3>
+                          <p className="text-gray-600 text-sm mt-1">Deploy formally verified Move modules to Rainum</p>
+                        </div>
+                        <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 border border-gray-300 rounded-[4px]">
+                          <Shield className="w-4 h-4 text-gray-700" />
+                          <span className="text-sm font-medium text-gray-900">Move VM</span>
+                        </div>
+                      </div>
+
+                      {/* Module Templates */}
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-semibold text-gray-900">Module Templates</h4>
+                        <div className="grid grid-cols-3 gap-3">
+                          <button
+                            onClick={() => setMoveModuleCode('module 0x1::Counter {\n    use std::signer;\n\n    struct Counter has key {\n        value: u64\n    }\n\n    public entry fun create(account: &signer) {\n        move_to(account, Counter { value: 0 });\n    }\n\n    public entry fun increment(account: &signer) acquires Counter {\n        let counter = borrow_global_mut<Counter>(signer::address_of(account));\n        counter.value = counter.value + 1;\n    }\n\n    public fun get_value(addr: address): u64 acquires Counter {\n        borrow_global<Counter>(addr).value\n    }\n}')}
+                            className="px-4 py-3 bg-white border border-gray-300 rounded-[4px] hover:border-[#0019ff] hover:bg-gray-50 transition-all text-left"
+                          >
+                            <div className="text-sm font-semibold text-gray-900">Counter Module</div>
+                            <div className="text-xs text-gray-500 mt-1">Basic counter operations</div>
+                          </button>
+
+                          <button
+                            onClick={() => setMoveModuleCode('module 0x1::Token {\n    use std::signer;\n    use std::string::{Self, String};\n\n    struct Token has key {\n        name: String,\n        symbol: String,\n        decimals: u8,\n        total_supply: u64\n    }\n\n    struct Balance has key {\n        amount: u64\n    }\n\n    public entry fun initialize(\n        account: &signer,\n        name: vector<u8>,\n        symbol: vector<u8>,\n        decimals: u8,\n        initial_supply: u64\n    ) {\n        let token = Token {\n            name: string::utf8(name),\n            symbol: string::utf8(symbol),\n            decimals,\n            total_supply: initial_supply\n        };\n        move_to(account, token);\n        move_to(account, Balance { amount: initial_supply });\n    }\n\n    public entry fun transfer(from: &signer, to: address, amount: u64) acquires Balance {\n        let from_addr = signer::address_of(from);\n        let from_balance = borrow_global_mut<Balance>(from_addr);\n        from_balance.amount = from_balance.amount - amount;\n\n        if (!exists<Balance>(to)) {\n            move_to(from, Balance { amount: 0 });\n        };\n        let to_balance = borrow_global_mut<Balance>(to);\n        to_balance.amount = to_balance.amount + amount;\n    }\n}')}
+                            className="px-4 py-3 bg-white border border-gray-300 rounded-[4px] hover:border-[#0019ff] hover:bg-gray-50 transition-all text-left"
+                          >
+                            <div className="text-sm font-semibold text-gray-900">Token Module</div>
+                            <div className="text-xs text-gray-500 mt-1">Fungible token standard</div>
+                          </button>
+
+                          <button
+                            onClick={() => setMoveModuleCode('module 0x1::NFTCollection {\n    use std::signer;\n    use std::string::{Self, String};\n    use std::vector;\n\n    struct NFT has store, key {\n        id: u64,\n        name: String,\n        description: String,\n        uri: String\n    }\n\n    struct Collection has key {\n        nfts: vector<NFT>,\n        next_id: u64\n    }\n\n    public entry fun create_collection(account: &signer) {\n        move_to(account, Collection {\n            nfts: vector::empty<NFT>(),\n            next_id: 1\n        });\n    }\n\n    public entry fun mint_nft(\n        account: &signer,\n        name: vector<u8>,\n        description: vector<u8>,\n        uri: vector<u8>\n    ) acquires Collection {\n        let collection = borrow_global_mut<Collection>(signer::address_of(account));\n        let nft = NFT {\n            id: collection.next_id,\n            name: string::utf8(name),\n            description: string::utf8(description),\n            uri: string::utf8(uri)\n        };\n        vector::push_back(&mut collection.nfts, nft);\n        collection.next_id = collection.next_id + 1;\n    }\n}')}
+                            className="px-4 py-3 bg-white border border-gray-300 rounded-[4px] hover:border-[#0019ff] hover:bg-gray-50 transition-all text-left"
+                          >
+                            <div className="text-sm font-semibold text-gray-900">NFT Collection</div>
+                            <div className="text-xs text-gray-500 mt-1">Non-fungible tokens</div>
+                          </button>
+
+                          <button
+                            onClick={() => setMoveModuleCode('module 0x1::Vault {\n    use std::signer;\n    use aptos_framework::coin;\n    use aptos_framework::aptos_coin::AptosCoin;\n\n    struct Vault has key {\n        balance: u64,\n        owner: address\n    }\n\n    public entry fun create_vault(account: &signer) {\n        let addr = signer::address_of(account);\n        move_to(account, Vault {\n            balance: 0,\n            owner: addr\n        });\n    }\n\n    public entry fun deposit(account: &signer, amount: u64) acquires Vault {\n        let addr = signer::address_of(account);\n        let vault = borrow_global_mut<Vault>(addr);\n        vault.balance = vault.balance + amount;\n    }\n\n    public entry fun withdraw(account: &signer, amount: u64) acquires Vault {\n        let addr = signer::address_of(account);\n        let vault = borrow_global_mut<Vault>(addr);\n        assert!(vault.balance >= amount, 1);\n        vault.balance = vault.balance - amount;\n    }\n\n    public fun get_balance(addr: address): u64 acquires Vault {\n        borrow_global<Vault>(addr).balance\n    }\n}')}
+                            className="px-4 py-3 bg-white border border-gray-300 rounded-[4px] hover:border-[#0019ff] hover:bg-gray-50 transition-all text-left"
+                          >
+                            <div className="text-sm font-semibold text-gray-900">Vault Module</div>
+                            <div className="text-xs text-gray-500 mt-1">Secure asset storage</div>
+                          </button>
+
+                          <button
+                            onClick={() => setMoveModuleCode('module 0x1::Marketplace {\n    use std::signer;\n    use std::vector;\n\n    struct Listing has store {\n        seller: address,\n        nft_id: u64,\n        price: u64,\n        active: bool\n    }\n\n    struct Marketplace has key {\n        listings: vector<Listing>,\n        next_listing_id: u64\n    }\n\n    public entry fun initialize(account: &signer) {\n        move_to(account, Marketplace {\n            listings: vector::empty<Listing>(),\n            next_listing_id: 0\n        });\n    }\n\n    public entry fun create_listing(\n        account: &signer,\n        nft_id: u64,\n        price: u64\n    ) acquires Marketplace {\n        let marketplace = borrow_global_mut<Marketplace>(signer::address_of(account));\n        let listing = Listing {\n            seller: signer::address_of(account),\n            nft_id,\n            price,\n            active: true\n        };\n        vector::push_back(&mut marketplace.listings, listing);\n        marketplace.next_listing_id = marketplace.next_listing_id + 1;\n    }\n\n    public entry fun purchase(\n        account: &signer,\n        marketplace_addr: address,\n        listing_id: u64\n    ) acquires Marketplace {\n        let marketplace = borrow_global_mut<Marketplace>(marketplace_addr);\n        let listing = vector::borrow_mut(&mut marketplace.listings, listing_id);\n        assert!(listing.active, 1);\n        listing.active = false;\n    }\n}')}
+                            className="px-4 py-3 bg-white border border-gray-300 rounded-[4px] hover:border-[#0019ff] hover:bg-gray-50 transition-all text-left"
+                          >
+                            <div className="text-sm font-semibold text-gray-900">Marketplace</div>
+                            <div className="text-xs text-gray-500 mt-1">Decentralized marketplace</div>
+                          </button>
+
+                          <button
+                            onClick={() => setMoveModuleCode('module 0x1::DAO {\n    use std::signer;\n    use std::vector;\n\n    struct Proposal has store {\n        id: u64,\n        description: vector<u8>,\n        yes_votes: u64,\n        no_votes: u64,\n        active: bool,\n        executed: bool\n    }\n\n    struct DAO has key {\n        proposals: vector<Proposal>,\n        next_proposal_id: u64,\n        members: vector<address>\n    }\n\n    public entry fun initialize(account: &signer) {\n        move_to(account, DAO {\n            proposals: vector::empty<Proposal>(),\n            next_proposal_id: 0,\n            members: vector::empty<address>()\n        });\n    }\n\n    public entry fun create_proposal(\n        account: &signer,\n        description: vector<u8>\n    ) acquires DAO {\n        let dao = borrow_global_mut<DAO>(signer::address_of(account));\n        let proposal = Proposal {\n            id: dao.next_proposal_id,\n            description,\n            yes_votes: 0,\n            no_votes: 0,\n            active: true,\n            executed: false\n        };\n        vector::push_back(&mut dao.proposals, proposal);\n        dao.next_proposal_id = dao.next_proposal_id + 1;\n    }\n\n    public entry fun vote(\n        account: &signer,\n        dao_addr: address,\n        proposal_id: u64,\n        vote_yes: bool\n    ) acquires DAO {\n        let dao = borrow_global_mut<DAO>(dao_addr);\n        let proposal = vector::borrow_mut(&mut dao.proposals, proposal_id);\n        assert!(proposal.active, 1);\n        if (vote_yes) {\n            proposal.yes_votes = proposal.yes_votes + 1;\n        } else {\n            proposal.no_votes = proposal.no_votes + 1;\n        }\n    }\n}')}
+                            className="px-4 py-3 bg-white border border-gray-300 rounded-[4px] hover:border-[#0019ff] hover:bg-gray-50 transition-all text-left"
+                          >
+                            <div className="text-sm font-semibold text-gray-900">DAO Module</div>
+                            <div className="text-xs text-gray-500 mt-1">Decentralized governance</div>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Module Code Input */}
+                      <div className="space-y-2">
+                        <label className="block text-sm font-semibold text-gray-900">
+                          Move Module Code
+                          <span className="text-red-500 ml-1">*</span>
+                        </label>
+                        <textarea
+                          value={moveModuleCode}
+                          onChange={(e) => setMoveModuleCode(e.target.value)}
+                          placeholder="module 0x1::MyModule {&#10;    use std::signer;&#10;    &#10;    struct Counter has key {&#10;        value: u64&#10;    }&#10;}"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-[4px] focus:ring-2 focus:ring-[#0019ff] focus:border-transparent font-mono text-sm resize-none text-gray-900 placeholder:text-gray-500"
+                          rows={12}
+                        />
+                        <p className="text-xs text-gray-500">
+                          Write your Move module code with formal verification
+                        </p>
+                      </div>
+
+                      {/* Module Arguments */}
+                      <div className="space-y-2">
+                        <label className="block text-sm font-semibold text-gray-900">
+                          Module Arguments
+                          <span className="text-gray-400 ml-1 font-normal">(Optional)</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={moveModuleArgs}
+                          onChange={(e) => setMoveModuleArgs(e.target.value)}
+                          placeholder="Initialization parameters..."
+                          className="w-full px-4 py-3 border border-gray-300 rounded-[4px] focus:ring-2 focus:ring-[#0019ff] focus:border-transparent font-mono text-sm text-gray-900 placeholder:text-gray-500"
+                        />
+                        <p className="text-xs text-gray-500">
+                          Module initialization parameters (if your module requires initialization)
+                        </p>
+                      </div>
+
+                      {/* Gas Settings */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="block text-sm font-semibold text-gray-900">
+                            Gas Limit
+                          </label>
+                          <input
+                            type="number"
+                            placeholder="3000000"
+                            defaultValue="3000000"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-[4px] focus:ring-2 focus:ring-[#0019ff] focus:border-transparent text-gray-900 placeholder:text-gray-500"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="block text-sm font-semibold text-gray-900">
+                            Gas Price (RAIN)
+                          </label>
+                          <input
+                            type="number"
+                            placeholder="1"
+                            defaultValue="1"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-[4px] focus:ring-2 focus:ring-[#0019ff] focus:border-transparent text-gray-900 placeholder:text-gray-500"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Estimated Cost */}
+                      <div className="bg-gray-50 border border-gray-200 rounded-[4px] p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Zap className="w-5 h-5 text-gray-700" />
+                            <span className="font-semibold text-gray-900">Estimated Publishing Cost</span>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-gray-900">1 RAIN</div>
+                            <div className="text-sm text-gray-500">≈ $0.10 USD</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Publish Button */}
+                      <div className="flex gap-3">
+                        <button
+                          onClick={handlePublishMoveModule}
+                          disabled={isDeploying || !moveModuleCode}
+                          className="flex-1 bg-black text-white px-6 py-4 rounded-[4px] font-semibold hover:bg-gray-800 transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <Shield className="w-5 h-5" />
+                          {isDeploying ? 'Publishing...' : 'Publish Module'}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setMoveModuleCode('');
+                            setMoveModuleArgs('');
+                          }}
+                          className="px-6 py-4 border border-gray-300 text-gray-700 rounded-[4px] font-semibold hover:bg-gray-50 transition-all"
+                        >
+                          Clear
+                        </button>
+                      </div>
+
+                      {/* Move Info */}
+                      <div className="bg-gray-50 border border-gray-200 rounded-[4px] p-4">
+                        <div className="flex gap-3">
+                          <Info className="w-5 h-5 text-gray-700 flex-shrink-0 mt-0.5" />
+                          <div className="text-sm text-gray-900">
+                            <p className="font-semibold mb-1">Move Module Benefits:</p>
+                            <ul className="space-y-1 text-gray-700">
+                              <li>• Formal verification prevents runtime errors</li>
+                              <li>• Resource safety guarantees no double-spending</li>
+                              <li>• Linear types ensure assets cannot be copied or lost</li>
+                              <li>• Native support for digital assets and NFTs</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </motion.div>
             )}
 
