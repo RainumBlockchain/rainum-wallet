@@ -22,6 +22,11 @@ const nextConfig: NextConfig = {
         hostname: 'assets.coingecko.com',
         pathname: '/coins/images/**',
       },
+      {
+        protocol: 'https',
+        hostname: 's2.coinmarketcap.com',
+        pathname: '/static/img/coins/**',
+      },
     ],
   },
   async headers() {
@@ -35,7 +40,7 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-eval' 'unsafe-inline'", // unsafe-eval needed for Next.js
               "style-src 'self' 'unsafe-inline'", // unsafe-inline needed for Tailwind
-              "img-src 'self' data: https://cryptologos.cc https://assets.coingecko.com",
+              "img-src 'self' data: https://cryptologos.cc https://assets.coingecko.com https://s2.coinmarketcap.com",
               "font-src 'self' data:",
               "connect-src 'self' ws://localhost:* wss://localhost:* http://localhost:* http://127.0.0.1:* ws://127.0.0.1:* https: wss://stream.binance.com:9443 wss://api.coingecko.com",
               "frame-ancestors 'none'",

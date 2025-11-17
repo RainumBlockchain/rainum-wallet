@@ -1223,22 +1223,18 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden bg-gradient-to-br from-white via-gray-50 to-white rounded-3xl border border-gray-200/50 shadow-2xl shadow-black/5"
+        className="bg-white rounded-[4px] border-2 border-gray-300"
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0019ff]/5 via-transparent to-purple-500/5"></div>
-        <div className="relative px-8 py-10">
+        <div className="px-8 py-10">
           <div className="flex items-start justify-between">
             <div>
               <div className="inline-flex items-center gap-3 mb-4">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#0019ff] to-[#0015cc] rounded-2xl blur-lg opacity-40"></div>
-                  <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-[#0019ff] to-[#0015cc] flex items-center justify-center shadow-lg">
-                    <ArrowRightLeft className="w-7 h-7 text-white" strokeWidth={2.5} />
-                  </div>
+                <div className="w-14 h-14 rounded-[4px] bg-[#0019ff] flex items-center justify-center">
+                  <ArrowRightLeft className="w-7 h-7 text-white" strokeWidth={2.5} />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Cross-Chain Bridge</h1>
-                  <p className="text-sm text-gray-500 mt-0.5">Trustless atomic swaps powered by HTLC</p>
+                  <h1 className="text-3xl font-bold text-black tracking-tight">Cross-Chain Bridge</h1>
+                  <p className="text-sm text-gray-600 mt-0.5">Trustless atomic swaps powered by HTLC</p>
                 </div>
               </div>
 
@@ -1256,40 +1252,40 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
 
             {/* Stats */}
             <div className="flex gap-3">
-              <div className="px-5 py-3 rounded-xl bg-white/60 backdrop-blur-sm border border-gray-200/50">
+              <div className="px-5 py-3 rounded-[4px] bg-white border-2 border-gray-300">
                 <p className="text-xs text-gray-500 mb-0.5">Total Swaps</p>
-                <p className="text-xl font-bold text-gray-900">{mySwaps.length}</p>
+                <p className="text-xl font-bold text-black">{mySwaps.length}</p>
               </div>
-              <div className="px-5 py-3 rounded-xl bg-white/60 backdrop-blur-sm border border-gray-200/50">
+              <div className="px-5 py-3 rounded-[4px] bg-white border-2 border-gray-300">
                 <p className="text-xs text-gray-500 mb-0.5">Active</p>
-                <p className="text-xl font-bold text-green-600">{mySwaps.filter(s => s.state === 'Locked').length}</p>
+                <p className="text-xl font-bold text-black">{mySwaps.filter(s => s.state === 'Locked').length}</p>
               </div>
             </div>
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-2 mt-8 p-1 bg-gray-100/80 backdrop-blur-sm rounded-xl w-fit">
+          <div className="flex gap-2 mt-8 p-1 bg-gray-100 rounded-[4px] w-fit">
             <button
               onClick={() => setActiveTab('create')}
-              className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+              className={`px-6 py-2.5 rounded-[4px] text-sm font-semibold transition-all ${
                 activeTab === 'create'
-                  ? 'bg-white text-gray-900 shadow-md'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white text-black border-2 border-[#0019ff]'
+                  : 'text-gray-600 hover:text-black'
               }`}
             >
               Create Swap
             </button>
             <button
               onClick={() => setActiveTab('track')}
-              className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 ${
+              className={`px-6 py-2.5 rounded-[4px] text-sm font-semibold transition-all flex items-center gap-2 ${
                 activeTab === 'track'
-                  ? 'bg-white text-gray-900 shadow-md'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white text-black border-2 border-[#0019ff]'
+                  : 'text-gray-600 hover:text-black'
               }`}
             >
               My Swaps
               {mySwaps.length > 0 && (
-                <span className="px-2 py-0.5 bg-[#0019ff] text-white text-xs rounded-full">
+                <span className="px-2 py-0.5 bg-[#0019ff] text-white text-xs rounded-[4px]">
                   {mySwaps.length}
                 </span>
               )}
@@ -1307,17 +1303,17 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
             exit={{ opacity: 0, scale: 0.9 }}
             className="fixed top-6 right-6 z-50"
           >
-            <div className={`px-6 py-4 rounded-2xl shadow-2xl border backdrop-blur-xl flex items-center gap-3 min-w-[320px] ${
+            <div className={`px-6 py-4 rounded-[4px] border-2 flex items-center gap-3 min-w-[320px] bg-white ${
               message.type === 'success'
-                ? 'bg-green-50/95 border-green-200 text-green-900'
+                ? 'border-green-600'
                 : message.type === 'error'
-                ? 'bg-red-50/95 border-red-200 text-red-900'
-                : 'bg-blue-50/95 border-blue-200 text-blue-900'
+                ? 'border-red-600'
+                : 'border-[#0019ff]'
             }`}>
               {message.type === 'success' && <CheckCircle2 className="w-5 h-5 text-green-600" />}
               {message.type === 'error' && <AlertTriangle className="w-5 h-5 text-red-600" />}
-              {message.type === 'info' && <Info className="w-5 h-5 text-blue-600" />}
-              <p className="font-medium text-sm">{message.text}</p>
+              {message.type === 'info' && <Info className="w-5 h-5 text-[#0019ff]" />}
+              <p className="font-medium text-sm text-black">{message.text}</p>
             </div>
           </motion.div>
         )}
@@ -1331,12 +1327,12 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
           className="space-y-6"
         >
           {/* Chain Selection */}
-          <div className="bg-white rounded-3xl border border-gray-200/50 p-8 shadow-lg shadow-black/5">
+          <div className="bg-white rounded-[4px] border-2 border-gray-300 p-8">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-gray-900">Select Target Chain</h3>
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-50 to-purple-50 rounded-full">
-                <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-                <span className="text-xs font-semibold bg-gradient-to-r from-blue-700 to-purple-700 bg-clip-text text-transparent">
+              <h3 className="text-lg font-bold text-black">Select Target Chain</h3>
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-[#0019ff] rounded-[4px]">
+                <Sparkles className="w-3.5 h-3.5 text-white" />
+                <span className="text-xs font-semibold text-white">
                   {Object.keys(CHAIN_INFO).length} Networks
                 </span>
               </div>
@@ -1357,23 +1353,14 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
                       initial={showAllNetworks && !DEFAULT_CHAINS.includes(chain) ? { opacity: 0, scale: 0.8 } : {}}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.2 }}
-                      className={`relative group p-6 rounded-2xl transition-all ${
+                      className={`relative group p-6 rounded-[4px] transition-all border-2 ${
                         isSelected
-                          ? 'bg-gradient-to-br ' + info.gradient + ' shadow-lg ' + info.glow
-                          : 'bg-gray-50 hover:bg-gray-100 border border-gray-200'
+                          ? 'bg-white border-[#0019ff]'
+                          : 'bg-white border-gray-300 hover:border-gray-400'
                       } ${!info.available ? 'cursor-not-allowed opacity-60' : ''}`}
                     >
-                      {isSelected && (
-                        <motion.div
-                          layoutId="selectedChain"
-                          className="absolute inset-0 rounded-2xl bg-gradient-to-br opacity-10"
-                        />
-                      )}
-
                       <div className="relative">
-                        <div className={`relative w-14 h-14 rounded-xl mb-3 flex items-center justify-center mx-auto ${
-                          isSelected ? 'bg-white/20 backdrop-blur-sm' : 'bg-white shadow-sm'
-                        }`}>
+                        <div className="relative w-14 h-14 rounded-[4px] mb-3 flex items-center justify-center mx-auto bg-gray-50 border border-gray-200">
                           <img
                             src={info.logo}
                             alt={info.name}
@@ -1383,8 +1370,8 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
 
                           {/* Badge overlay on logo */}
                           {info.badge && (
-                            <div className="absolute inset-0 rounded-xl flex items-center justify-center">
-                              <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded shadow-lg ${
+                            <div className="absolute inset-0 rounded-[4px] flex items-center justify-center">
+                              <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-[4px] ${
                                 info.available
                                   ? 'bg-green-500 text-white'
                                   : 'bg-gray-600 text-white'
@@ -1394,10 +1381,10 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
                             </div>
                           )}
                         </div>
-                        <p className={`text-sm font-bold ${isSelected ? 'text-white' : 'text-gray-900'}`}>
+                        <p className="text-sm font-bold text-black">
                           {info.name}
                         </p>
-                        <p className={`text-xs mt-1 ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>
+                        <p className="text-xs mt-1 text-gray-500">
                           {info.symbol}
                         </p>
 
@@ -1405,9 +1392,9 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
                           <motion.div
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
-                            className="absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-lg"
+                            className="absolute -top-2 -right-2 w-6 h-6 bg-[#0019ff] rounded-full flex items-center justify-center"
                           >
-                            <Check className="w-4 h-4 text-green-600" strokeWidth={3} />
+                            <Check className="w-4 h-4 text-white" strokeWidth={3} />
                           </motion.div>
                         )}
                       </div>
@@ -1424,7 +1411,7 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setShowAllNetworks(true)}
-                className="mt-6 w-full py-4 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 border-2 border-gray-200 rounded-2xl font-semibold text-gray-700 transition-all flex items-center justify-center gap-2 group"
+                className="mt-6 w-full py-4 bg-white hover:bg-gray-50 border-2 border-gray-300 hover:border-[#0019ff] rounded-[4px] font-semibold text-black transition-all flex items-center justify-center gap-2 group"
               >
                 <Sparkles className="w-4 h-4 text-gray-500 group-hover:text-[#0019ff] transition-colors" />
                 <span>Show {Object.keys(CHAIN_INFO).length - DEFAULT_CHAINS.length} More Networks</span>
@@ -1440,7 +1427,7 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setShowAllNetworks(false)}
-                className="mt-6 w-full py-4 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 border-2 border-gray-200 rounded-2xl font-semibold text-gray-700 transition-all flex items-center justify-center gap-2"
+                className="mt-6 w-full py-4 bg-white hover:bg-gray-50 border-2 border-gray-300 hover:border-[#0019ff] rounded-[4px] font-semibold text-black transition-all flex items-center justify-center gap-2"
               >
                 <span>Show Less</span>
                 <motion.div
@@ -1454,45 +1441,45 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
           </div>
 
           {/* Swap Details */}
-          <div className="bg-white rounded-3xl border border-gray-200/50 p-8 shadow-lg shadow-black/5 space-y-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-6">Swap Details</h3>
+          <div className="bg-white rounded-[4px] border-2 border-gray-300 p-8 space-y-6">
+            <h3 className="text-lg font-bold text-black mb-6">Swap Details</h3>
 
             <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">Amount</label>
+              <label className="block text-sm font-semibold text-black">Amount</label>
               <div className="relative">
                 <input
                   type="number"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="0.00"
-                  className="w-full px-6 py-4 pr-20 text-lg font-semibold text-gray-900 placeholder:text-gray-400 bg-gray-50 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0019ff] focus:bg-white transition-all"
+                  className="w-full px-6 py-4 pr-20 text-lg font-semibold text-black placeholder:text-gray-500 bg-white border-2 border-gray-300 rounded-[4px] focus:outline-none focus:border-[#0019ff] transition-all"
                 />
-                <span className="absolute right-6 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400">RAIN</span>
+                <span className="absolute right-6 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-500">RAIN</span>
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">Receiver Address</label>
+              <label className="block text-sm font-semibold text-black">Receiver Address</label>
               <input
                 type="text"
                 value={receiver}
                 onChange={(e) => setReceiver(e.target.value)}
                 placeholder="0x..."
-                className="w-full px-6 py-4 font-mono text-sm text-gray-900 placeholder:text-gray-400 bg-gray-50 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#0019ff] focus:bg-white transition-all"
+                className="w-full px-6 py-4 font-mono text-sm text-black placeholder:text-gray-500 bg-white border-2 border-gray-300 rounded-[4px] focus:outline-none focus:border-[#0019ff] transition-all"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">Lock Duration</label>
+              <label className="block text-sm font-semibold text-black">Lock Duration</label>
               <div className="grid grid-cols-4 gap-3">
                 {['1', '6', '12', '24'].map((hours) => (
                   <button
                     key={hours}
                     onClick={() => setTimeoutHours(hours)}
-                    className={`px-4 py-3 rounded-xl font-semibold text-sm transition-all ${
+                    className={`px-4 py-3 rounded-[4px] font-semibold text-sm transition-all ${
                       timeoutHours === hours
-                        ? 'bg-[#0019ff] text-white shadow-lg'
-                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
+                        ? 'bg-[#0019ff] text-white border-2 border-[#0019ff]'
+                        : 'bg-white text-black hover:bg-gray-50 border-2 border-gray-300'
                     }`}
                   >
                     {hours}h
@@ -1503,18 +1490,18 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
           </div>
 
           {/* Secret Generation */}
-          <div className="bg-gradient-to-br from-orange-50 via-white to-orange-50 rounded-3xl border border-orange-200/50 p-8 shadow-lg shadow-orange-500/5">
+          <div className="bg-white rounded-[4px] border-2 border-gray-300 p-8">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Secret Key</h3>
-                <p className="text-xs text-gray-500 mt-1">Required to claim funds on target chain</p>
+                <h3 className="text-lg font-bold text-black">Secret Key</h3>
+                <p className="text-xs text-gray-600 mt-1">Required to claim funds on target chain</p>
               </div>
               {!generatedSecret ? (
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={generateSecret}
-                  className="px-6 py-3 bg-gradient-to-r from-[#0019ff] to-[#0015cc] text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 flex items-center gap-2 hover:shadow-xl transition-all"
+                  className="px-6 py-3 bg-[#0019ff] text-white font-bold rounded-[4px] flex items-center gap-2 hover:bg-[#0015cc] transition-all"
                 >
                   <Sparkles className="w-4 h-4" />
                   Generate
@@ -1524,7 +1511,7 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => copyToClipboard(generatedSecret, 'secret')}
-                  className="px-6 py-3 bg-white border-2 border-gray-200 text-gray-900 font-bold rounded-xl shadow-sm flex items-center gap-2 hover:shadow-md transition-all"
+                  className="px-6 py-3 bg-white border-2 border-gray-300 text-black font-bold rounded-[4px] flex items-center gap-2 hover:border-[#0019ff] transition-all"
                 >
                   {secretCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                   {secretCopied ? 'Copied!' : 'Copy'}
@@ -1538,7 +1525,7 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
                 animate={{ opacity: 1, height: 'auto' }}
                 className="space-y-4"
               >
-                <div className="flex items-start gap-3 p-4 bg-orange-100 border border-orange-200 rounded-xl">
+                <div className="flex items-start gap-3 p-4 bg-orange-50 border-2 border-orange-500 rounded-[4px]">
                   <AlertTriangle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-sm font-bold text-orange-900">Save this secret immediately!</p>
@@ -1548,13 +1535,13 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
                   </div>
                 </div>
 
-                <div className="p-5 bg-white rounded-xl border border-gray-200 shadow-inner">
-                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Secret (Private)</p>
-                  <p className="font-mono text-xs text-gray-900 break-all leading-relaxed">{generatedSecret}</p>
+                <div className="p-5 bg-gray-50 rounded-[4px] border-2 border-gray-300">
+                  <p className="text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Secret (Private)</p>
+                  <p className="font-mono text-xs text-black break-all leading-relaxed">{generatedSecret}</p>
                 </div>
 
-                <div className="p-5 bg-gray-50 rounded-xl border border-gray-200">
-                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Hash Lock (Public)</p>
+                <div className="p-5 bg-gray-50 rounded-[4px] border-2 border-gray-300">
+                  <p className="text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Hash Lock (Public)</p>
                   <p className="font-mono text-xs text-gray-600 break-all leading-relaxed">{hashLock}</p>
                 </div>
               </motion.div>
@@ -1567,7 +1554,7 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
             whileTap={{ scale: 0.99 }}
             onClick={handleCreateSwap}
             disabled={loading || !amount || !receiver || !generatedSecret}
-            className="w-full py-5 bg-gradient-to-r from-[#0019ff] to-[#0015cc] text-white font-bold text-lg rounded-2xl shadow-2xl shadow-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all flex items-center justify-center gap-3 hover:shadow-blue-500/50"
+            className="w-full py-5 bg-[#0019ff] text-white font-bold text-lg rounded-[4px] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3 hover:bg-[#0015cc]"
           >
             {loading ? (
               <>
@@ -1595,11 +1582,11 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className="p-5 bg-gradient-to-br from-white to-gray-50 rounded-2xl border border-gray-200/50 shadow-sm"
+                className="p-5 bg-white rounded-[4px] border-2 border-gray-300"
               >
-                <feature.icon className={`w-8 h-8 text-${feature.color}-600 mb-3`} />
-                <h4 className="font-bold text-gray-900 mb-1">{feature.label}</h4>
-                <p className="text-xs text-gray-500">{feature.desc}</p>
+                <feature.icon className={`w-8 h-8 text-[#0019ff] mb-3`} />
+                <h4 className="font-bold text-black mb-1">{feature.label}</h4>
+                <p className="text-xs text-gray-600">{feature.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -1614,13 +1601,13 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
           className="space-y-4"
         >
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-bold text-gray-900">Active Swaps</h3>
+            <h3 className="text-xl font-bold text-black">Active Swaps</h3>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={fetchMySwaps}
               disabled={refreshing}
-              className="px-4 py-2.5 bg-white border border-gray-200 rounded-xl font-semibold text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 flex items-center gap-2 shadow-sm"
+              className="px-4 py-2.5 bg-white border-2 border-gray-300 rounded-[4px] font-semibold text-sm text-black hover:border-[#0019ff] disabled:opacity-50 flex items-center gap-2"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
               Refresh
@@ -1631,18 +1618,18 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-gradient-to-br from-gray-50 to-white rounded-3xl border border-gray-200/50 p-16 text-center shadow-lg"
+              className="bg-white rounded-[4px] border-2 border-gray-300 p-16 text-center"
             >
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center mx-auto mb-6">
-                <ArrowRightLeft className="w-10 h-10 text-gray-400" />
+              <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-6">
+                <ArrowRightLeft className="w-10 h-10 text-gray-500" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">No swaps yet</h3>
-              <p className="text-sm text-gray-500 mb-6">Create your first cross-chain swap to get started</p>
+              <h3 className="text-xl font-bold text-black mb-2">No swaps yet</h3>
+              <p className="text-sm text-gray-600 mb-6">Create your first cross-chain swap to get started</p>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setActiveTab('create')}
-                className="px-8 py-3 bg-[#0019ff] text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 inline-flex items-center gap-2"
+                className="px-8 py-3 bg-[#0019ff] text-white font-bold rounded-[4px] inline-flex items-center gap-2 hover:bg-[#0015cc]"
               >
                 Create Your First Swap
                 <ChevronRight className="w-4 h-4" />
@@ -1661,11 +1648,11 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className="bg-white rounded-2xl border border-gray-200/50 p-6 shadow-lg shadow-black/5 hover:shadow-xl transition-all"
+                    className="bg-white rounded-[4px] border-2 border-gray-300 p-6 hover:border-[#0019ff] transition-all"
                   >
                     <div className="flex items-start justify-between mb-5">
                       <div className="flex items-center gap-4">
-                        <div className={`relative w-12 h-12 rounded-xl bg-gradient-to-br ${chainInfo.gradient} shadow-lg flex items-center justify-center p-2`}>
+                        <div className="relative w-12 h-12 rounded-[4px] bg-gray-50 border border-gray-200 flex items-center justify-center p-2">
                           <img
                             src={chainInfo.logo}
                             alt={chainInfo.name}
@@ -1675,35 +1662,35 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
                         </div>
                         <div>
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="font-bold text-gray-900">RAIN</span>
+                            <span className="font-bold text-black">RAIN</span>
                             <ArrowRight className="w-4 h-4 text-gray-400" />
-                            <span className="font-bold text-gray-900">{chainInfo.name}</span>
+                            <span className="font-bold text-black">{chainInfo.name}</span>
                           </div>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-gray-600">
                             {swap.amount} RAIN → {swap.receiver.slice(0, 12)}...
                           </p>
                         </div>
                       </div>
 
-                      <div className={`px-4 py-1.5 rounded-full text-xs font-bold ${
+                      <div className={`px-4 py-1.5 rounded-[4px] text-xs font-bold ${
                         swap.state === 'Locked'
-                          ? 'bg-yellow-100 text-yellow-700'
+                          ? 'bg-yellow-100 text-yellow-700 border border-yellow-300'
                           : swap.state === 'Claimed'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-gray-100 text-gray-700'
+                          ? 'bg-green-100 text-green-700 border border-green-300'
+                          : 'bg-gray-100 text-gray-700 border border-gray-300'
                       }`}>
                         {swap.state}
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 mb-5 p-4 bg-gray-50 rounded-xl">
+                    <div className="grid grid-cols-2 gap-4 mb-5 p-4 bg-gray-50 rounded-[4px] border border-gray-200">
                       <div>
-                        <p className="text-xs text-gray-500 mb-1 font-medium">Contract ID</p>
-                        <p className="text-xs font-mono text-gray-900">{swap.contract_id.slice(0, 20)}...</p>
+                        <p className="text-xs text-gray-600 mb-1 font-medium">Contract ID</p>
+                        <p className="text-xs font-mono text-black">{swap.contract_id.slice(0, 20)}...</p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500 mb-1 font-medium">Time Left</p>
-                        <p className={`text-xs font-bold ${isExpired ? 'text-red-600' : 'text-gray-900'}`}>
+                        <p className="text-xs text-gray-600 mb-1 font-medium">Time Left</p>
+                        <p className={`text-xs font-bold ${isExpired ? 'text-red-600' : 'text-black'}`}>
                           {timeRemaining}
                         </p>
                       </div>
@@ -1718,7 +1705,7 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
                               value={claimSecret}
                               onChange={(e) => setClaimSecret(e.target.value)}
                               placeholder="Paste secret to claim..."
-                              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl font-mono text-sm focus:outline-none focus:border-[#0019ff] bg-gray-50"
+                              className="w-full px-4 py-3 border-2 border-gray-300 rounded-[4px] font-mono text-sm text-black placeholder:text-gray-500 focus:outline-none focus:border-[#0019ff] bg-white"
                             />
                             <div className="flex gap-2">
                               <motion.button
@@ -1726,7 +1713,7 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
                                 whileTap={{ scale: 0.98 }}
                                 onClick={() => handleClaimSwap(swap.contract_id)}
                                 disabled={loading || !claimSecret}
-                                className="flex-1 py-3 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 disabled:opacity-50 shadow-lg"
+                                className="flex-1 py-3 bg-green-600 text-white font-bold rounded-[4px] hover:bg-green-700 disabled:opacity-50"
                               >
                                 {loading ? 'Claiming...' : 'Claim Now'}
                               </motion.button>
@@ -1735,7 +1722,7 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
                                   setSelectedSwapId('');
                                   setClaimSecret('');
                                 }}
-                                className="px-5 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200"
+                                className="px-5 py-3 bg-white border-2 border-gray-300 text-black font-bold rounded-[4px] hover:bg-gray-50"
                               >
                                 Cancel
                               </button>
@@ -1747,7 +1734,7 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
                               onClick={() => setSelectedSwapId(swap.contract_id)}
-                              className="flex-1 py-3 bg-[#0019ff] text-white font-bold rounded-xl hover:bg-[#0015cc] shadow-lg flex items-center justify-center gap-2"
+                              className="flex-1 py-3 bg-[#0019ff] text-white font-bold rounded-[4px] hover:bg-[#0015cc] flex items-center justify-center gap-2"
                             >
                               <Check className="w-4 h-4" />
                               Claim Swap
@@ -1758,7 +1745,7 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
                                 whileTap={{ scale: 0.98 }}
                                 onClick={() => handleRefundSwap(swap.contract_id)}
                                 disabled={loading}
-                                className="flex-1 py-3 bg-gray-700 text-white font-bold rounded-xl hover:bg-gray-800 disabled:opacity-50 shadow-lg"
+                                className="flex-1 py-3 bg-gray-700 text-white font-bold rounded-[4px] hover:bg-gray-800 disabled:opacity-50"
                               >
                                 {loading ? 'Refunding...' : 'Refund'}
                               </motion.button>
