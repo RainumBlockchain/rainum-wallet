@@ -31,16 +31,17 @@ interface NetworkStore {
 
 // Default networks with official Rainum Chain IDs
 // Chain ID Structure:
-// - Mainnet: 999 (official Rainum mainnet)
-// - Testnet: 9999 (official Rainum testnet)
-// - Devnet: 99999 (official Rainum devnet)
+// - Mainnet: 999 (3 nines - official Rainum mainnet)
+// - Testnet: 9999 (4 nines - official Rainum testnet)
+// - Devnet: 99999 (5 nines - official Rainum devnet)
+// - Local: 999999 (6 nines - local development)
 export const NETWORKS = {
   LOCAL: {
     id: 'local',
     name: 'Local',
     rpcUrl: 'http://localhost:8080',
     explorerUrl: 'http://localhost:3000',
-    chainId: '99999',
+    chainId: '999999',
     isCustom: false,
   } as Network,
   DEVNET: {
