@@ -779,13 +779,14 @@ export default function DashboardPage() {
   }, [priority, enableZKP, isMaxActive]);
 
   useEffect(() => {
-    if (isHydrated && (!isConnected || !address)) {
-      router.push("/");
-    } else if (isHydrated && isConnected && address) {
+    // Only update data if connected, but don't redirect
+    // (middleware already handles auth redirects to prevent loops)
+    if (isHydrated && isConnected && address) {
       updateBalance();
       fetchTransactions();
     }
-  }, [isHydrated, isConnected, address, router, updateBalance]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHydrated, isConnected, address]);
 
   // Calculate total balance across all accounts
   useEffect(() => {
