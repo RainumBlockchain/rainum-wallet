@@ -1420,32 +1420,32 @@ export default function DashboardPage() {
         <DialogBackdrop className="fixed inset-0 bg-gray-900/80 transition-opacity" />
         <div className="fixed inset-0 z-10 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4">
-            <DialogPanel className="relative transform overflow-hidden rounded bg-white px-6 py-8 shadow-xl transition-all w-full max-w-md">
-              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 rounded-full bg-yellow-100">
-                <AlertTriangle className="w-6 h-6 text-yellow-600" />
+            <DialogPanel className="relative transform overflow-hidden rounded-[4px] bg-white px-6 py-8 shadow-xl transition-all w-full max-w-md">
+              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 rounded-full bg-blue-100">
+                <AlertTriangle className="w-6 h-6 text-blue-600" />
               </div>
               <h3 className="text-xl font-bold text-center text-gray-900 mb-2">Confirm Transaction</h3>
               <p className="text-sm text-gray-600 text-center mb-6">
                 Please verify the recipient address before continuing. Transactions cannot be reversed.
               </p>
 
-              <div className="bg-gray-50 rounded p-4 mb-6 space-y-3">
+              <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-[4px] p-4 mb-6 space-y-3">
                 <div>
                   <p className="text-xs text-gray-500 font-semibold mb-1">Recipient</p>
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-mono text-gray-900 break-all flex-1">{recipient}</p>
-                    {addressExists === true && !addressIsNew && <Check className="w-4 h-4 text-green-600 flex-shrink-0" />}
-                    {addressExists === true && addressIsNew && <Info className="w-4 h-4 text-cyan-600 flex-shrink-0" />}
-                    {addressExists === false && <AlertTriangle className="w-4 h-4 text-red-600 flex-shrink-0" />}
+                    {addressExists === true && !addressIsNew && <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />}
+                    {addressExists === true && addressIsNew && <Info className="w-4 h-4 text-blue-500 flex-shrink-0" />}
+                    {addressExists === false && <AlertTriangle className="w-4 h-4 text-gray-600 flex-shrink-0" />}
                   </div>
                   {addressExists === true && !addressIsNew && (
-                    <p className="text-xs text-green-600 mt-1 font-medium">✓ Verified address with activity</p>
+                    <p className="text-xs text-blue-600 mt-1 font-medium">✓ Verified address with activity</p>
                   )}
                   {addressExists === true && addressIsNew && (
-                    <p className="text-xs text-cyan-600 mt-1 font-medium">ℹ️ New/unused address</p>
+                    <p className="text-xs text-blue-500 mt-1 font-medium">ℹ️ New/unused address</p>
                   )}
                   {addressExists === false && (
-                    <p className="text-xs text-red-600 mt-1 font-medium">⚠️ Invalid address</p>
+                    <p className="text-xs text-gray-600 mt-1 font-medium">⚠️ Invalid address</p>
                   )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -1461,28 +1461,28 @@ export default function DashboardPage() {
               </div>
 
               {addressExists === true && !addressIsNew ? (
-                <div className="bg-green-50 border border-green-100 rounded p-3 mb-6">
+                <div className="bg-gradient-to-br from-blue-50 to-white border border-blue-200 rounded-[4px] p-3 mb-6">
                   <div className="flex gap-2">
-                    <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                    <p className="text-xs text-green-700">
+                    <Check className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-blue-700 font-medium">
                       Address verified with activity on Rainum network. Please confirm the transaction details.
                     </p>
                   </div>
                 </div>
               ) : addressExists === true && addressIsNew ? (
-                <div className="bg-cyan-50 border border-cyan-200 rounded p-3 mb-6">
+                <div className="bg-gradient-to-br from-blue-50/50 to-white border border-blue-200 rounded-[4px] p-3 mb-6">
                   <div className="flex gap-2">
-                    <Info className="w-4 h-4 text-cyan-600 mt-0.5 flex-shrink-0" />
-                    <p className="text-xs text-cyan-700 font-semibold">
+                    <Info className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-blue-600 font-medium">
                       ℹ️ INFO: This address is new/unused but has valid EVM format. You can send to it safely. Transactions cannot be reversed, so please verify the address is correct.
                     </p>
                   </div>
                 </div>
               ) : (
-                <div className="bg-yellow-50 border border-yellow-100 rounded p-3 mb-6">
+                <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-300 rounded-[4px] p-3 mb-6">
                   <div className="flex gap-2">
-                    <AlertTriangle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
-                    <p className="text-xs text-yellow-700">
+                    <AlertTriangle className="w-4 h-4 text-gray-600 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-gray-700 font-medium">
                       Make sure the recipient address is correct. Transactions cannot be reversed.
                     </p>
                   </div>
@@ -1514,7 +1514,7 @@ export default function DashboardPage() {
                 }
 
                 return (
-                  <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded p-4 mb-6">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100/50 border border-blue-200 rounded-[4px] p-4 mb-6">
                     <div className="flex items-start gap-3">
                       <div
                         className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm"
@@ -1547,13 +1547,13 @@ export default function DashboardPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowSecurityDialog(false)}
-                  className="flex-1 px-4 py-3 rounded border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-3 rounded-[4px] border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSecurityConfirm}
-                  className="flex-1 px-4 py-3 rounded bg-[#0019ff] text-white font-semibold hover:bg-blue-700 transition-colors"
+                  className="flex-1 px-4 py-3 rounded-[4px] bg-[#0019ff] text-white font-semibold hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
                 >
                   Continue
                 </button>
@@ -1708,7 +1708,7 @@ export default function DashboardPage() {
         <DialogBackdrop className="fixed inset-0 bg-gray-900/80 transition-opacity" />
         <div className="fixed inset-0 z-10 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4">
-            <DialogPanel className="relative transform overflow-hidden rounded bg-white px-6 py-8 shadow-xl transition-all w-full max-w-md">
+            <DialogPanel className="relative transform overflow-hidden rounded-[4px] bg-white px-6 py-8 shadow-xl transition-all w-full max-w-md">
               <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 rounded-full bg-blue-100">
                 <Check className="w-6 h-6 text-[#0019ff]" />
               </div>
@@ -1716,7 +1716,7 @@ export default function DashboardPage() {
               <p className="text-sm text-gray-600 text-center mb-6">Review your transaction details before sending</p>
 
               <div className="space-y-4 mb-6">
-                <div className="bg-gray-50 rounded p-4">
+                <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-[4px] p-4">
                   <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-200">
                     <span className="text-sm text-gray-600">From</span>
                     <span className="text-sm font-mono text-gray-900">{address?.slice(0, 8)}...{address?.slice(-6)}</span>
@@ -1727,7 +1727,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-200">
                     <span className="text-sm text-gray-600">Amount</span>
-                    <span className="text-sm font-semibold text-gray-900">{amount} RAIN</span>
+                    <span className="text-sm font-bold font-mono text-gray-900">{amount} RAIN</span>
                   </div>
                   <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-200">
                     <span className="text-sm text-gray-600">Priority</span>
@@ -1741,10 +1741,10 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-gray-50 to-white border-2 border-[#0019ff] rounded p-4">
+                <div className="bg-gradient-to-br from-blue-50 to-white border-2 border-[#0019ff] rounded-[4px] p-4">
                   <div className="flex items-center justify-between">
                     <span className="text-base font-semibold text-gray-900">Total Cost</span>
-                    <span className="text-lg font-bold text-[#0019ff]">
+                    <span className="text-lg font-bold font-mono text-[#0019ff]">
                       {(parseFloat(amount.replace(/,/g, '')) + parseFloat(priorityOptions.find((p) => p.id === priority)?.fee || "0.001")).toFixed(4)} RAIN
                     </span>
                   </div>
@@ -1754,13 +1754,13 @@ export default function DashboardPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowSummaryDialog(false)}
-                  className="flex-1 px-4 py-3 rounded border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-3 rounded-[4px] border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
                 >
                   Back
                 </button>
                 <button
                   onClick={handleFinalSend}
-                  className="flex-1 px-4 py-3 rounded bg-black text-white font-semibold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-3 rounded-[4px] bg-black text-white font-semibold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
                 >
                   <span>Send Now</span>
                   <ArrowRightLeft className="w-4 h-4" />
@@ -1776,40 +1776,40 @@ export default function DashboardPage() {
         <DialogBackdrop className="fixed inset-0 bg-gray-900/80 transition-opacity" />
         <div className="fixed inset-0 z-10 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4">
-            <DialogPanel className="relative transform overflow-hidden rounded-2xl bg-white px-6 py-8 shadow-xl transition-all w-full max-w-md">
-              <div className="flex items-center justify-center w-14 h-14 mx-auto mb-4 rounded-full bg-orange-100">
-                <AlertTriangle className="w-8 h-8 text-orange-600" />
+            <DialogPanel className="relative transform overflow-hidden rounded-[4px] bg-white px-6 py-8 shadow-xl transition-all w-full max-w-md">
+              <div className="flex items-center justify-center w-14 h-14 mx-auto mb-4 rounded-full bg-blue-100">
+                <AlertTriangle className="w-8 h-8 text-blue-600" />
               </div>
               <h3 className="text-2xl font-bold text-center text-gray-900 mb-2">Large Transaction Amount</h3>
               <p className="text-sm text-gray-600 text-center mb-6">
                 You are about to send a large amount. Please confirm this is intentional.
               </p>
 
-              <div className="bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-300 rounded-xl p-5 mb-6">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 border-2 border-blue-300 rounded-[4px] p-5 mb-6">
                 <div className="text-center">
-                  <p className="text-xs text-orange-700 font-semibold mb-2 uppercase tracking-wide">Transaction Amount</p>
-                  <p className="text-3xl font-bold text-orange-900 font-mono">
+                  <p className="text-xs text-blue-700 font-semibold mb-2 uppercase tracking-wide">Transaction Amount</p>
+                  <p className="text-3xl font-bold text-black font-mono">
                     {amount} RAIN
                   </p>
-                  <p className="text-sm text-orange-700 mt-3">
+                  <p className="text-sm text-blue-600 mt-3">
                     ≈ {parseFloat(amount.replace(/,/g, '')).toLocaleString('en-US')} RAIN
                   </p>
                 </div>
               </div>
 
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+              <div className="bg-gradient-to-br from-blue-50/50 to-white border border-blue-200 rounded-[4px] p-4 mb-6">
                 <div className="flex gap-3">
-                  <AlertTriangle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                  <AlertTriangle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-semibold text-orange-900 mb-1">Security Notice</p>
-                    <p className="text-xs text-orange-700">
+                    <p className="text-sm font-semibold text-gray-900 mb-1">Security Notice</p>
+                    <p className="text-xs text-gray-700">
                       This transaction exceeds 100,000 RAIN. Please verify the recipient address is correct. Transactions cannot be reversed.
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-gray-50 rounded-lg p-4 mb-6">
+              <div className="bg-gray-50 border border-gray-200 rounded-[4px] p-4 mb-6">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Recipient</span>
                   <span className="text-sm font-mono text-gray-900">{recipient.slice(0, 10)}...{recipient.slice(-8)}</span>
@@ -1819,13 +1819,13 @@ export default function DashboardPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowHighAmountDialog(false)}
-                  className="flex-1 px-4 py-3 rounded-lg border-2 border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-3 rounded-[4px] border-2 border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleHighAmountConfirm}
-                  className="flex-1 px-4 py-3 rounded-lg bg-orange-600 text-white font-semibold hover:bg-orange-700 transition-colors"
+                  className="flex-1 px-4 py-3 rounded-[4px] bg-black text-white font-semibold hover:bg-gray-800 transition-colors shadow-md hover:shadow-lg"
                 >
                   Confirm & Continue
                 </button>
@@ -3370,14 +3370,14 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Transaction History */}
-                <div className="bg-white border border-gray-200 rounded p-8 shadow-sm">
+                <div className="bg-white border border-gray-200 rounded-[4px] p-8 shadow-sm">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold text-black tracking-tight">Transaction History</h2>
                     <div className="flex items-center gap-3">
                       <button
                         onClick={exportToCSV}
                         disabled={transactions.length === 0}
-                        className="text-sm text-green-600 hover:text-green-700 font-semibold flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="text-sm text-[#0019ff] hover:text-blue-700 font-semibold flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         <Download className="w-4 h-4" />
                         Export CSV
@@ -3385,7 +3385,7 @@ export default function DashboardPage() {
                       <button
                         onClick={fetchTransactions}
                         disabled={loadingTransactions}
-                        className="text-sm text-[#0019ff] hover:text-blue-700 font-semibold flex items-center gap-1 disabled:opacity-50"
+                        className="text-sm text-[#0019ff] hover:text-blue-700 font-semibold flex items-center gap-1 disabled:opacity-50 transition-colors"
                       >
                         <RefreshCw className={classNames("w-4 h-4", loadingTransactions ? "animate-spin" : "")} />
                         Refresh
@@ -3404,7 +3404,7 @@ export default function DashboardPage() {
                           placeholder="Search by hash or address..."
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
-                          className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded focus:ring-2 focus:ring-[#0019ff] focus:border-[#0019ff] outline-none transition-all text-sm text-gray-900"
+                          className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-[4px] focus:ring-2 focus:ring-[#0019ff] focus:border-[#0019ff] outline-none transition-all text-sm text-gray-900 font-mono"
                         />
                       </div>
 
@@ -3417,7 +3417,7 @@ export default function DashboardPage() {
                             <button
                               onClick={() => setFilterStatus("all")}
                               className={classNames(
-                                "px-3 py-1.5 text-xs font-semibold rounded transition-all",
+                                "px-3 py-1.5 text-xs font-semibold rounded-[4px] transition-all",
                                 filterStatus === "all"
                                   ? "bg-[#0019ff] text-white"
                                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -3428,9 +3428,9 @@ export default function DashboardPage() {
                             <button
                               onClick={() => setFilterStatus("confirmed")}
                               className={classNames(
-                                "px-3 py-1.5 text-xs font-semibold rounded transition-all",
+                                "px-3 py-1.5 text-xs font-semibold rounded-[4px] transition-all",
                                 filterStatus === "confirmed"
-                                  ? "bg-green-600 text-white"
+                                  ? "bg-[#0019ff] text-white"
                                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                               )}
                             >
@@ -3439,9 +3439,9 @@ export default function DashboardPage() {
                             <button
                               onClick={() => setFilterStatus("pending")}
                               className={classNames(
-                                "px-3 py-1.5 text-xs font-semibold rounded transition-all",
+                                "px-3 py-1.5 text-xs font-semibold rounded-[4px] transition-all",
                                 filterStatus === "pending"
-                                  ? "bg-yellow-600 text-white"
+                                  ? "bg-black text-white"
                                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                               )}
                             >
@@ -3457,7 +3457,7 @@ export default function DashboardPage() {
                             <button
                               onClick={() => setSortBy("newest")}
                               className={classNames(
-                                "px-3 py-1.5 text-xs font-semibold rounded transition-all",
+                                "px-3 py-1.5 text-xs font-semibold rounded-[4px] transition-all",
                                 sortBy === "newest"
                                   ? "bg-[#0019ff] text-white"
                                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -3468,7 +3468,7 @@ export default function DashboardPage() {
                             <button
                               onClick={() => setSortBy("oldest")}
                               className={classNames(
-                                "px-3 py-1.5 text-xs font-semibold rounded transition-all",
+                                "px-3 py-1.5 text-xs font-semibold rounded-[4px] transition-all",
                                 sortBy === "oldest"
                                   ? "bg-[#0019ff] text-white"
                                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -3479,7 +3479,7 @@ export default function DashboardPage() {
                             <button
                               onClick={() => setSortBy("amount")}
                               className={classNames(
-                                "px-3 py-1.5 text-xs font-semibold rounded transition-all",
+                                "px-3 py-1.5 text-xs font-semibold rounded-[4px] transition-all",
                                 sortBy === "amount"
                                   ? "bg-[#0019ff] text-white"
                                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -3538,13 +3538,13 @@ export default function DashboardPage() {
                               setSelectedTransaction(tx);
                               setShowTransactionDetail(true);
                             }}
-                            className="w-full flex items-center justify-between p-4 rounded border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer hover:bg-gray-50"
+                            className="w-full flex items-center justify-between p-4 rounded-[4px] border border-gray-200 hover:border-blue-200 hover:shadow-md transition-all cursor-pointer hover:bg-gradient-to-r hover:from-blue-50/30 hover:to-transparent"
                           >
                             <div className="flex items-center gap-4">
                               <div
                                 className={classNames(
                                   "w-10 h-10 rounded-full flex items-center justify-center relative",
-                                  tx.zkp_enabled ? "bg-purple-50" : (isOutgoing ? "bg-red-50" : "bg-green-50")
+                                  tx.zkp_enabled ? "bg-purple-50" : (isOutgoing ? "bg-blue-50" : "bg-blue-50/70")
                                 )}
                               >
                                 {tx.zkp_enabled ? (
@@ -3553,7 +3553,7 @@ export default function DashboardPage() {
                                   <ArrowRightLeft
                                     className={classNames(
                                       "w-5 h-5",
-                                      isOutgoing ? "text-red-600 rotate-90" : "text-green-600 -rotate-90"
+                                      isOutgoing ? "text-blue-600 rotate-90" : "text-blue-500 -rotate-90"
                                     )}
                                   />
                                 )}
@@ -3621,8 +3621,8 @@ export default function DashboardPage() {
                             <div className="text-right flex flex-col items-end gap-1">
                               <p
                                 className={classNames(
-                                  "text-sm font-bold",
-                                  tx.zkp_enabled ? "text-purple-600" : (isOutgoing ? "text-red-600" : "text-green-600")
+                                  "text-sm font-bold font-mono tracking-tight",
+                                  tx.zkp_enabled ? "text-purple-600" : (isOutgoing ? "text-blue-600" : "text-blue-500")
                                 )}
                               >
                                 {isOutgoing ? "-" : "+"} {formatTransactionAmount(tx)}
@@ -3655,7 +3655,7 @@ export default function DashboardPage() {
                             onClick={() => setCurrentPage(currentPage - 1)}
                             disabled={currentPage === 1}
                             className={classNames(
-                              "px-3 py-2 rounded border transition-all flex items-center gap-1",
+                              "px-3 py-2 rounded-[4px] border transition-all flex items-center gap-1",
                               currentPage === 1
                                 ? "border-gray-200 text-gray-400 cursor-not-allowed"
                                 : "border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400"
@@ -3684,7 +3684,7 @@ export default function DashboardPage() {
                                   key={page}
                                   onClick={() => setCurrentPage(page)}
                                   className={classNames(
-                                    "px-3 py-2 rounded border transition-all min-w-[40px]",
+                                    "px-3 py-2 rounded-[4px] border transition-all min-w-[40px]",
                                     currentPage === page
                                       ? "bg-[#0019ff] text-white border-[#0019ff]"
                                       : "border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400"
@@ -3700,7 +3700,7 @@ export default function DashboardPage() {
                             onClick={() => setCurrentPage(currentPage + 1)}
                             disabled={currentPage === getTotalPages()}
                             className={classNames(
-                              "px-3 py-2 rounded border transition-all flex items-center gap-1",
+                              "px-3 py-2 rounded-[4px] border transition-all flex items-center gap-1",
                               currentPage === getTotalPages()
                                 ? "border-gray-200 text-gray-400 cursor-not-allowed"
                                 : "border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400"
