@@ -29,14 +29,18 @@ interface NetworkStore {
   getCurrentRpcUrl: () => string;
 }
 
-// Default networks
+// Default networks with official Rainum Chain IDs
+// Chain ID Structure:
+// - Mainnet: 999 (official Rainum mainnet)
+// - Testnet: 9999 (official Rainum testnet)
+// - Devnet: 99999 (official Rainum devnet)
 export const NETWORKS = {
   LOCAL: {
     id: 'local',
     name: 'Local',
     rpcUrl: 'http://localhost:8080',
     explorerUrl: 'http://localhost:3000',
-    chainId: '999',
+    chainId: '99999',
     isCustom: false,
   } as Network,
   DEVNET: {
@@ -44,7 +48,7 @@ export const NETWORKS = {
     name: 'Devnet',
     rpcUrl: 'https://api.rainum.com',
     explorerUrl: 'https://explorer.rainum.com',
-    chainId: '999',
+    chainId: '99999',
     isCustom: false,
   } as Network,
   TESTNET: {
@@ -52,7 +56,7 @@ export const NETWORKS = {
     name: 'Testnet',
     rpcUrl: 'https://testnet-rpc.rainum.network',
     explorerUrl: 'https://testnet-explorer.rainum.network',
-    chainId: '2',
+    chainId: '9999',
     isCustom: false,
   } as Network,
   MAINNET: {
@@ -60,7 +64,7 @@ export const NETWORKS = {
     name: 'Mainnet',
     rpcUrl: 'https://rpc.rainum.network',
     explorerUrl: 'https://explorer.rainum.network',
-    chainId: '1',
+    chainId: '999',
     isCustom: false,
   } as Network,
 };
