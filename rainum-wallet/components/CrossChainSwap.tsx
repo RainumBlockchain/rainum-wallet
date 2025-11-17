@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRightLeft, Copy, Check, AlertTriangle, Clock, Loader2, Shield, Zap, Info, ArrowRight, RefreshCw, ChevronRight, Sparkles, Lock, CheckCircle2 } from 'lucide-react';
+import Image from 'next/image';
 
 interface HTLC {
   contract_id: string;
@@ -1361,11 +1362,13 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
                     >
                       <div className="relative">
                         <div className="relative w-14 h-14 rounded-[4px] mb-3 flex items-center justify-center mx-auto bg-gray-50 border border-gray-200">
-                          <img
+                          <Image
                             src={info.logo}
                             alt={info.name}
-                            className="w-9 h-9 object-contain"
-                            crossOrigin="anonymous"
+                            width={36}
+                            height={36}
+                            className="object-contain"
+                            unoptimized
                           />
 
                           {/* Badge overlay on logo */}
@@ -1653,11 +1656,13 @@ export default function CrossChainSwap({ walletAddress }: CrossChainSwapProps) {
                     <div className="flex items-start justify-between mb-5">
                       <div className="flex items-center gap-4">
                         <div className="relative w-12 h-12 rounded-[4px] bg-gray-50 border border-gray-200 flex items-center justify-center p-2">
-                          <img
+                          <Image
                             src={chainInfo.logo}
                             alt={chainInfo.name}
-                            className="w-full h-full object-contain"
-                            crossOrigin="anonymous"
+                            width={32}
+                            height={32}
+                            className="object-contain"
+                            unoptimized
                           />
                         </div>
                         <div>
