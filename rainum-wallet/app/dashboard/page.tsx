@@ -4915,12 +4915,12 @@ export default function DashboardPage() {
                               </div>
                             </div>
 
-                            <div className="bg-amber-50 border-2 border-amber-500 rounded-[4px] p-4 mb-6">
+                            <div className="bg-gray-50 border-2 border-gray-400 rounded-[4px] p-4 mb-6">
                               <div className="flex gap-2">
-                                <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                                <AlertTriangle className="w-5 h-5 text-black flex-shrink-0 mt-0.5" />
                                 <div>
-                                  <p className="text-sm text-amber-900 font-semibold">Security Warning</p>
-                                  <p className="text-xs text-amber-800 mt-1">
+                                  <p className="text-sm text-black font-semibold">Security Warning</p>
+                                  <p className="text-xs text-gray-700 mt-1">
                                     Never share your recovery phrase or private keys with anyone.
                                     Anyone with access to these can steal all your funds.
                                   </p>
@@ -4931,18 +4931,18 @@ export default function DashboardPage() {
                             <div className="space-y-3">
                               <Link
                                 href="/backup-export"
-                                className="w-full flex items-center justify-between bg-red-50 hover:bg-red-100 rounded-[4px] p-4 transition-all border-2 border-red-500 hover:border-red-600 group"
+                                className="w-full flex items-center justify-between bg-white hover:bg-gray-50 rounded-[4px] p-4 transition-all border-2 border-gray-300 hover:border-[#0019ff] group"
                               >
                                 <div className="flex items-center gap-3">
-                                  <div className="w-10 h-10 rounded-[4px] bg-red-500/20 flex items-center justify-center group-hover:bg-red-500/30 transition-colors">
-                                    <Key className="w-5 h-5 text-red-600" />
+                                  <div className="w-10 h-10 rounded-[4px] bg-[#0019ff] flex items-center justify-center group-hover:bg-[#0015cc] transition-colors">
+                                    <Key className="w-5 h-5 text-white" />
                                   </div>
                                   <div className="text-left">
                                     <p className="text-sm font-bold text-black">Backup & Export</p>
                                     <p className="text-xs text-gray-600">Secure export with password verification</p>
                                   </div>
                                 </div>
-                                <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-red-600" />
+                                <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-[#0019ff]" />
                               </Link>
                             </div>
                           </div>
