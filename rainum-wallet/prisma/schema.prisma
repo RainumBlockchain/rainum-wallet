@@ -1,0 +1,151 @@
+// Prisma Schema for FIAT-X-RAINUM
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model - links wallet address to fiat accounts
+model User {
+  id                    String   @id @default(uuid())
+  walletAddress         String   @unique  // Rainum wallet address
+  email                 String?  @unique
+
+  // Modulr IDs
+  modulrCustomerId      String?  @unique
+  modulrAccountId       String?  @unique
+
+  // MoonPay ID
+  moonpayCustomerId     String?  @unique
+
+  // KYC Status
+  kycStatus             KYCStatus @default(PENDING)
+  kycProvider           String?  // "modulr" or "moonpay"
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  transactions          FiatTransaction[]
+  kycDocuments          KYCDocument[]
+
+  @@index([walletAddress])
+  @@index([email])
+}
+
+// Fiat transaction model
+model FiatTransaction {
+  id                    String   @id @default(uuid())
+  userId                String
+  user                  User     @relation(fields: [userId], references: [id])
+
+  type                  TransactionType  // BUY or SELL
+  provider              Provider         // MODULR or MOONPAY
+  status                TransactionStatus @default(PENDING)
+
+  // Fiat side
+  fiatAmount            Decimal  @db.Decimal(20, 2)
+  fiatCurrency          String   @default("EUR")
+
+  // Crypto side
+  cryptoAmount          Decimal  @db.Decimal(30, 8)
+  rainumTxHash          String?  // Blockchain tx hash
+
+  // Exchange info
+  exchangeRate          Decimal  @db.Decimal(20, 8)
+  feeAmount             Decimal  @db.Decimal(20, 2)
+
+  // Provider IDs
+  modulrPaymentId       String?  @unique
+  moonpayTransactionId  String?  @unique
+
+  // Timestamps
+  createdAt             DateTime @default(now())
+  completedAt           DateTime?
+
+  // Metadata
+  notes                 String?
+  errorMessage          String?
+
+  @@index([userId, createdAt])
+  @@index([status])
+  @@index([provider, status])
+}
+
+// KYC document model
+model KYCDocument {
+  id                    String   @id @default(uuid())
+  userId                String
+  user                  User     @relation(fields: [userId], references: [id])
+
+  documentType          String   // "passport", "drivers_license", "proof_of_address"
+  documentUrl           String   // S3 or local path
+  status                DocumentStatus @default(PENDING)
+
+  uploadedAt            DateTime @default(now())
+  verifiedAt            DateTime?
+
+  @@index([userId, status])
+}
+
+// Exchange rate history
+model ExchangeRate {
+  id                    Int      @id @default(autoincrement())
+  rainumToUSD           Decimal  @db.Decimal(20, 8)
+  rainumToEUR           Decimal  @db.Decimal(20, 8)
+  rainumToGBP           Decimal  @db.Decimal(20, 8)
+  timestamp             DateTime @default(now())
+
+  @@index([timestamp])
+}
+
+// Webhook log for debugging
+model WebhookLog {
+  id                    Int      @id @default(autoincrement())
+  provider              String   // "modulr" or "moonpay"
+  webhookType           String   // "PAYIN", "PAYOUT", etc.
+  payload               Json
+  processed             Boolean  @default(false)
+  processedAt           DateTime?
+  receivedAt            DateTime @default(now())
+  errorMessage          String?
+
+  @@index([provider, processed])
+  @@index([receivedAt])
+}
+
+// Enums
+enum KYCStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  EXPIRED
+}
+
+enum TransactionType {
+  BUY
+  SELL
+}
+
+enum Provider {
+  MODULR
+  MOONPAY
+}
+
+enum TransactionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum DocumentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}

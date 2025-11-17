@@ -27,6 +27,8 @@ import StakingDashboard from "@/components/StakingDashboard";
 import AIChatWidget from "@/components/AIChatWidget";
 import { GasEstimator } from "@/components/GasEstimator";
 import CrossChainSwap from "@/components/CrossChainSwap";
+import BuySellPanel from "@/components/fiat/BuySellPanel";
+import FiatTransactionHistory from "@/components/fiat/FiatTransactionHistory";
 import { DualVMDashboard } from "@/components/DualVMDashboard";
 import { VMSelector, VMTypeBadge, type VMType } from "@/components/shared/VMSelector";
 import { CrossVMIndicator } from "@/components/shared/CrossVMBadge";
@@ -97,6 +99,7 @@ import {
 const navigationItems = [
   { name: "Wallet", icon: Wallet },
   { name: "Transactions", icon: ArrowRightLeft },
+  { name: "Buy / Sell", icon: DollarSign },
   { name: "Staking", icon: TrendingUp },
   {
     name: "Smart Contracts",
@@ -4171,6 +4174,26 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Buy / Sell View */}
+            {activeTab === "Buy / Sell" && (
+              <motion.div
+                key="buy-sell"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-6"
+              >
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Buy/Sell Panel */}
+                  <BuySellPanel />
+
+                  {/* Transaction History */}
+                  <FiatTransactionHistory />
                 </div>
               </motion.div>
             )}
