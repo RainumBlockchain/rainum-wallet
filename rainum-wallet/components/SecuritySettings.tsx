@@ -354,7 +354,7 @@ export default function SecuritySettings() {
                     <div className={`px-3 py-1 rounded-[4px] text-xs font-bold ${
                       settings.security.sessionTimeoutEnabled ? 'bg-[#0019ff] text-white' : 'bg-gray-200 text-gray-700'
                     }`}>
-                      {settings.security.sessionTimeoutEnabled ? '✓ ENABLED' : '✗ DISABLED'}
+                      {settings.security.sessionTimeoutEnabled ? 'ENABLED' : 'DISABLED'}
                     </div>
                     <span className="text-xs text-gray-500">
                       {settings.security.sessionTimeoutEnabled
@@ -442,7 +442,7 @@ export default function SecuritySettings() {
                     <div className={`px-3 py-1 rounded-[4px] text-xs font-bold ${
                       settings.security.loginRateLimit.enabled ? 'bg-[#0019ff] text-white' : 'bg-gray-200 text-gray-700'
                     }`}>
-                      {settings.security.loginRateLimit.enabled ? '✓ ACTIVE' : '✗ DISABLED'}
+                      {settings.security.loginRateLimit.enabled ? 'ACTIVE' : 'DISABLED'}
                     </div>
                     <span className="text-xs text-gray-500">
                       {settings.security.loginRateLimit.enabled
@@ -542,20 +542,20 @@ export default function SecuritySettings() {
                       <>
                         <div className="flex items-center gap-2">
                           <div className="bg-gray-200 text-black px-3 py-1 rounded-[4px] text-xs font-bold">
-                            ⚠ {settings.security.transactionLimits.warningThreshold.toLocaleString()}+ RAIN
+                            WARNING: {settings.security.transactionLimits.warningThreshold.toLocaleString()}+ RAIN
                           </div>
                           <span className="text-xs text-gray-500">Warning confirmation</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <div className="bg-black text-white px-3 py-1 rounded-[4px] text-xs font-bold">
-                            🚨 {settings.security.transactionLimits.criticalThreshold.toLocaleString()}+ RAIN
+                            CRITICAL: {settings.security.transactionLimits.criticalThreshold.toLocaleString()}+ RAIN
                           </div>
                           <span className="text-xs text-gray-500">Critical confirmation</span>
                         </div>
                       </>
                     ) : (
                       <div className="bg-gray-200 text-gray-700 px-3 py-1 rounded-[4px] text-xs font-bold inline-block">
-                        ✗ DISABLED
+                        DISABLED
                       </div>
                     )}
                   </div>
@@ -648,7 +648,7 @@ export default function SecuritySettings() {
                 {!editingPassword ? (
                   <div className="flex items-center gap-2">
                     <div className="bg-[#0019ff] text-white px-3 py-1 rounded-[4px] text-xs font-bold">
-                      🔒 ENCRYPTED
+                      ENCRYPTED
                     </div>
                     <span className="text-xs text-gray-500">
                       Your wallet is password-protected
@@ -860,9 +860,9 @@ export default function SecuritySettings() {
 
             {/* Success Message */}
             {verifySuccess && (
-              <div className="bg-green-50 border border-green-200 rounded-[4px] p-3 mb-3">
-                <p className="text-sm font-bold text-green-700 mb-2">✓ Backup Verified Successfully</p>
-                <div className="space-y-1 text-xs text-green-600">
+              <div className="bg-gray-50 border-2 border-gray-300 rounded-[4px] p-3 mb-3">
+                <p className="text-sm font-bold text-black mb-2">Backup Verified Successfully</p>
+                <div className="space-y-1 text-xs text-gray-600">
                   <p>Address: {verifySuccess.address?.slice(0, 10)}...{verifySuccess.address?.slice(-8)}</p>
                   <p>Created: {verifySuccess.createdAt ? new Date(verifySuccess.createdAt).toLocaleDateString() : 'N/A'}</p>
                   <p>Version: {verifySuccess.version || 1}</p>
