@@ -4632,25 +4632,22 @@ export default function DashboardPage() {
                 className="space-y-6"
               >
                 {/* Settings Header & Tabs */}
-                <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                <div className="bg-white border-2 border-gray-300 rounded-[4px] overflow-hidden">
                   {/* Header */}
-                  <div className="bg-gradient-to-r from-[#0019ff] to-[#0028ff] px-8 py-6">
+                  <div className="bg-white px-8 py-6 border-b-2 border-gray-300">
                     <div className="flex items-center gap-4">
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-white/20 rounded-2xl blur"></div>
-                        <div className="relative w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20">
-                          <Settings className="w-8 h-8 text-white" />
-                        </div>
+                      <div className="w-14 h-14 rounded-[4px] bg-[#0019ff] flex items-center justify-center">
+                        <Settings className="w-8 h-8 text-white" />
                       </div>
                       <div>
-                        <h2 className="text-2xl font-bold text-white tracking-tight">Settings</h2>
-                        <p className="text-white/70 text-sm mt-1">Manage your wallet security and preferences</p>
+                        <h2 className="text-2xl font-bold text-black tracking-tight">Settings</h2>
+                        <p className="text-gray-600 text-sm mt-1">Manage your wallet security and preferences</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Tabs Navigation */}
-                  <div className="border-b border-gray-200 bg-gray-50">
+                  <div className="border-b-2 border-gray-300 bg-white">
                     <nav className="flex gap-2 px-6">
                       {[
                         { name: "Security", icon: ShieldCheck },
@@ -4665,7 +4662,7 @@ export default function DashboardPage() {
                           className={`flex items-center gap-2 px-4 py-3 border-b-2 font-semibold text-sm transition-all ${
                             settingsTab === tab.name
                               ? "border-[#0019ff] text-[#0019ff]"
-                              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                              : "border-transparent text-gray-600 hover:text-black hover:border-gray-400"
                           }`}
                         >
                           <tab.icon className="w-4 h-4" />
