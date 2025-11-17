@@ -1924,36 +1924,42 @@ export default function DashboardPage() {
                         {accounts.length > 1 ? (
                           <button
                             onClick={handleShowAccountBalances}
-                            className="flex items-baseline gap-2 flex-wrap hover:opacity-80 transition-opacity cursor-pointer"
+                            className="hover:opacity-80 transition-opacity cursor-pointer"
                           >
-                            <span className={`font-bold text-white ${
-                              balance.toLocaleString('en-US').length > 15 ? 'text-lg' :
-                              balance.toLocaleString('en-US').length > 10 ? 'text-xl' :
-                              'text-2xl'
-                            }`} style={{ fontFamily: 'SF Mono, Monaco, monospace', wordBreak: 'keep-all', whiteSpace: 'nowrap' }}>
-                              {balance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                            </span>
-                            <span className="text-sm font-semibold text-white/80">RAIN</span>
+                            <div className="flex flex-col gap-1">
+                              <span className={`font-bold text-white ${
+                                (balance * 0.10).toLocaleString('en-US').length > 12 ? 'text-lg' :
+                                (balance * 0.10).toLocaleString('en-US').length > 8 ? 'text-xl' :
+                                'text-2xl'
+                              }`} style={{ fontFamily: 'SF Mono, Monaco, monospace', wordBreak: 'keep-all', whiteSpace: 'nowrap' }}>
+                                ${(balance * 0.10).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </span>
+                              <span className="text-[10px] font-medium text-white/60">
+                                {balance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} RAIN
+                              </span>
+                            </div>
                           </button>
                         ) : (
-                          <div className="flex items-baseline gap-2 flex-wrap">
+                          <div className="flex flex-col gap-1">
                             <span className={`font-bold text-white ${
-                              balance.toLocaleString('en-US').length > 15 ? 'text-lg' :
-                              balance.toLocaleString('en-US').length > 10 ? 'text-xl' :
+                              (balance * 0.10).toLocaleString('en-US').length > 12 ? 'text-lg' :
+                              (balance * 0.10).toLocaleString('en-US').length > 8 ? 'text-xl' :
                               'text-2xl'
                             }`} style={{ fontFamily: 'SF Mono, Monaco, monospace', wordBreak: 'keep-all', whiteSpace: 'nowrap' }}>
-                              {balance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                              ${(balance * 0.10).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </span>
-                            <span className="text-sm font-semibold text-white/80">RAIN</span>
+                            <span className="text-[10px] font-medium text-white/60">
+                              {balance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} RAIN
+                            </span>
                           </div>
                         )}
                         {accounts.length > 1 && (
                           <button
                             onClick={handleShowAccountBalances}
-                            className="text-[10px] text-white/50 hover:text-white/70 font-mono leading-tight transition-colors cursor-pointer text-left"
+                            className="text-[10px] text-white/50 hover:text-white/70 font-mono leading-tight transition-colors cursor-pointer text-left mt-1"
                           >
                             {loadingTotalBalance ? 'Calculating...' :
-                              `Total: ${totalBalance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} RAIN`
+                              `Total: $${(totalBalance * 0.10).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${totalBalance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} RAIN)`
                             }
                           </button>
                         )}
@@ -2662,36 +2668,42 @@ export default function DashboardPage() {
                     {accounts.length > 1 ? (
                       <button
                         onClick={handleShowAccountBalances}
-                        className="flex items-baseline gap-2 flex-wrap hover:opacity-80 transition-opacity cursor-pointer"
+                        className="hover:opacity-80 transition-opacity cursor-pointer"
                       >
-                        <span className={`font-bold text-white ${
-                          balance.toLocaleString('en-US').length > 15 ? 'text-lg' :
-                          balance.toLocaleString('en-US').length > 10 ? 'text-xl' :
-                          'text-2xl'
-                        }`} style={{ fontFamily: 'SF Mono, Monaco, monospace', wordBreak: 'keep-all', whiteSpace: 'nowrap' }}>
-                          {balance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                        </span>
-                        <span className="text-sm font-semibold text-white/80">RAIN</span>
+                        <div className="flex flex-col gap-1">
+                          <span className={`font-bold text-white ${
+                            (balance * 0.10).toLocaleString('en-US').length > 12 ? 'text-lg' :
+                            (balance * 0.10).toLocaleString('en-US').length > 8 ? 'text-xl' :
+                            'text-2xl'
+                          }`} style={{ fontFamily: 'SF Mono, Monaco, monospace', wordBreak: 'keep-all', whiteSpace: 'nowrap' }}>
+                            ${(balance * 0.10).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </span>
+                          <span className="text-[10px] font-medium text-white/60">
+                            {balance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} RAIN
+                          </span>
+                        </div>
                       </button>
                     ) : (
-                      <div className="flex items-baseline gap-2 flex-wrap">
+                      <div className="flex flex-col gap-1">
                         <span className={`font-bold text-white ${
-                          balance.toLocaleString('en-US').length > 15 ? 'text-lg' :
-                          balance.toLocaleString('en-US').length > 10 ? 'text-xl' :
+                          (balance * 0.10).toLocaleString('en-US').length > 12 ? 'text-lg' :
+                          (balance * 0.10).toLocaleString('en-US').length > 8 ? 'text-xl' :
                           'text-2xl'
                         }`} style={{ fontFamily: 'SF Mono, Monaco, monospace', wordBreak: 'keep-all', whiteSpace: 'nowrap' }}>
-                          {balance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                          ${(balance * 0.10).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
-                        <span className="text-sm font-semibold text-white/80">RAIN</span>
+                        <span className="text-[10px] font-medium text-white/60">
+                          {balance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} RAIN
+                        </span>
                       </div>
                     )}
                     {accounts.length > 1 && (
                       <button
                         onClick={handleShowAccountBalances}
-                        className="text-[10px] text-white/50 hover:text-white/70 font-mono leading-tight transition-colors cursor-pointer text-left"
+                        className="text-[10px] text-white/50 hover:text-white/70 font-mono leading-tight transition-colors cursor-pointer text-left mt-1"
                       >
                         {loadingTotalBalance ? 'Calculating...' :
-                          `Total: ${totalBalance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} RAIN`
+                          `Total: $${(totalBalance * 0.10).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${totalBalance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} RAIN)`
                         }
                       </button>
                     )}
@@ -3157,27 +3169,33 @@ export default function DashboardPage() {
                         {accounts.length > 1 ? (
                           <button
                             onClick={handleShowAccountBalances}
-                            className="flex items-baseline gap-2 flex-wrap hover:opacity-80 transition-opacity cursor-pointer"
+                            className="hover:opacity-80 transition-opacity cursor-pointer"
                           >
-                            <p className={`font-bold text-white ${
-                              balance.toLocaleString('en-US').length > 15 ? 'text-lg' :
-                              balance.toLocaleString('en-US').length > 10 ? 'text-xl' :
-                              'text-2xl'
-                            }`} style={{ fontFamily: 'SF Mono, Monaco, monospace', wordBreak: 'keep-all', whiteSpace: 'nowrap' }}>
-                              {balance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                            </p>
-                            <p className="text-sm font-semibold text-white/80">RAIN</p>
+                            <div className="flex flex-col gap-1">
+                              <p className={`font-bold text-white ${
+                                (balance * 0.10).toLocaleString('en-US').length > 12 ? 'text-lg' :
+                                (balance * 0.10).toLocaleString('en-US').length > 8 ? 'text-xl' :
+                                'text-2xl'
+                              }`} style={{ fontFamily: 'SF Mono, Monaco, monospace', wordBreak: 'keep-all', whiteSpace: 'nowrap' }}>
+                                ${(balance * 0.10).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </p>
+                              <p className="text-[10px] font-medium text-white/60">
+                                {balance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} RAIN
+                              </p>
+                            </div>
                           </button>
                         ) : (
-                          <div className="flex items-baseline gap-2 flex-wrap">
+                          <div className="flex flex-col gap-1">
                             <p className={`font-bold text-white ${
-                              balance.toLocaleString('en-US').length > 15 ? 'text-lg' :
-                              balance.toLocaleString('en-US').length > 10 ? 'text-xl' :
+                              (balance * 0.10).toLocaleString('en-US').length > 12 ? 'text-lg' :
+                              (balance * 0.10).toLocaleString('en-US').length > 8 ? 'text-xl' :
                               'text-2xl'
                             }`} style={{ fontFamily: 'SF Mono, Monaco, monospace', wordBreak: 'keep-all', whiteSpace: 'nowrap' }}>
-                              {balance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                              ${(balance * 0.10).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </p>
-                            <p className="text-sm font-semibold text-white/80">RAIN</p>
+                            <p className="text-[10px] font-medium text-white/60">
+                              {balance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} RAIN
+                            </p>
                           </div>
                         )}
                         {accounts.length > 1 && (
@@ -3186,7 +3204,7 @@ export default function DashboardPage() {
                             className="text-[10px] text-white/50 hover:text-white/70 font-mono leading-tight transition-colors cursor-pointer text-left"
                           >
                             {loadingTotalBalance ? 'Calculating...' :
-                              `Total: ${totalBalance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} RAIN`
+                              `Total: $${(totalBalance * 0.10).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${totalBalance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} RAIN)`
                             }
                           </button>
                         )}
