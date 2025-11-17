@@ -4821,9 +4821,9 @@ export default function DashboardPage() {
                           transition={{ duration: 0.2 }}
                           className="space-y-6"
                         >
-                          <div className="bg-white border-2 border-gray-200 rounded-xl p-6 text-center">
-                            <Eye className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                            <h3 className="text-lg font-bold text-gray-900 mb-2">Privacy Settings</h3>
+                          <div className="bg-white border-2 border-gray-300 rounded-[4px] p-6 text-center">
+                            <Eye className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                            <h3 className="text-lg font-bold text-black mb-2">Privacy Settings</h3>
                             <p className="text-sm text-gray-600">
                               Privacy features like trusted addresses and contact management coming soon.
                             </p>
@@ -4842,12 +4842,12 @@ export default function DashboardPage() {
                           className="space-y-6"
                         >
                           {/* Account Discovery */}
-                          <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
+                          <div className="bg-white border-2 border-gray-300 rounded-[4px] p-6">
                             <div className="flex items-start justify-between mb-4">
                               <div className="flex items-center gap-3">
                                 <Search className="w-6 h-6 text-[#0019ff]" />
                                 <div>
-                                  <h3 className="text-lg font-bold text-gray-900">Account Discovery</h3>
+                                  <h3 className="text-lg font-bold text-black">Account Discovery</h3>
                                   <p className="text-sm text-gray-600 mt-1">
                                     Scan blockchain for all accounts from your recovery phrase
                                   </p>
@@ -4855,16 +4855,16 @@ export default function DashboardPage() {
                               </div>
                             </div>
 
-                            <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 mb-4">
+                            <div className="bg-blue-50 border-2 border-blue-500 rounded-[4px] p-4 mb-4">
                               <p className="text-sm text-blue-900 leading-relaxed">
                                 <strong className="font-semibold">Auto-Discovery:</strong> Your wallet automatically scans for accounts when you log in.
                                 Use this button to manually rescan if you created accounts elsewhere.
                               </p>
                             </div>
 
-                            <div className="flex items-center justify-between bg-gray-50 rounded-lg p-4">
+                            <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-[4px] p-4">
                               <div>
-                                <p className="text-sm font-semibold text-gray-900">Current accounts</p>
+                                <p className="text-sm font-semibold text-black">Current accounts</p>
                                 <p className="text-xs text-gray-600 mt-1">
                                   {accounts.length} account{accounts.length === 1 ? '' : 's'} found
                                 </p>
@@ -4872,7 +4872,7 @@ export default function DashboardPage() {
                               <button
                                 onClick={handleDiscoverAccounts}
                                 disabled={isDiscovering}
-                                className="flex items-center gap-2 px-4 py-2 bg-[#0019ff] text-white rounded-lg hover:bg-[#0019ff]/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                                className="flex items-center gap-2 px-4 py-2 bg-[#0019ff] text-white rounded-[4px] hover:bg-[#0015cc] transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
                               >
                                 {isDiscovering ? (
                                   <>
@@ -4902,12 +4902,12 @@ export default function DashboardPage() {
                           transition={{ duration: 0.2 }}
                         >
                           {/* Backup & Export */}
-                          <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
+                          <div className="bg-white border-2 border-gray-300 rounded-[4px] p-6">
                             <div className="flex items-start justify-between mb-4">
                               <div className="flex items-center gap-3">
                                 <Download className="w-6 h-6 text-[#0019ff]" />
                                 <div>
-                                  <h3 className="text-lg font-bold text-gray-900">Backup & Export</h3>
+                                  <h3 className="text-lg font-bold text-black">Backup & Export</h3>
                                   <p className="text-sm text-gray-600 mt-1">
                                     Export your recovery phrase and private keys
                                   </p>
@@ -4915,7 +4915,7 @@ export default function DashboardPage() {
                               </div>
                             </div>
 
-                            <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4 mb-6">
+                            <div className="bg-amber-50 border-2 border-amber-500 rounded-[4px] p-4 mb-6">
                               <div className="flex gap-2">
                                 <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                                 <div>
@@ -4931,14 +4931,14 @@ export default function DashboardPage() {
                             <div className="space-y-3">
                               <Link
                                 href="/backup-export"
-                                className="w-full flex items-center justify-between bg-gradient-to-r from-red-50 to-orange-50 hover:from-red-100 hover:to-orange-100 rounded-lg p-4 transition-all border-2 border-red-200 hover:border-red-400 group"
+                                className="w-full flex items-center justify-between bg-red-50 hover:bg-red-100 rounded-[4px] p-4 transition-all border-2 border-red-500 hover:border-red-600 group"
                               >
                                 <div className="flex items-center gap-3">
-                                  <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center group-hover:bg-red-500/30 transition-colors">
+                                  <div className="w-10 h-10 rounded-[4px] bg-red-500/20 flex items-center justify-center group-hover:bg-red-500/30 transition-colors">
                                     <Key className="w-5 h-5 text-red-600" />
                                   </div>
                                   <div className="text-left">
-                                    <p className="text-sm font-bold text-gray-900">Backup & Export</p>
+                                    <p className="text-sm font-bold text-black">Backup & Export</p>
                                     <p className="text-xs text-gray-600">Secure export with password verification</p>
                                   </div>
                                 </div>
