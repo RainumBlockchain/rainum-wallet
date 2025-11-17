@@ -20,6 +20,8 @@ import { getWalletSettings, saveWalletSettings, getTransactionLimitSettings, get
 import { useWebSocket, useNotificationPermission } from "@/hooks/useWebSocket";
 import { useBlockchainStatus } from "@/hooks/useBlockchainStatus";
 import { useCryptoPrices } from "@/hooks/useCryptoPrices";
+import { useExtensionDetection } from "@/hooks/useExtensionDetection";
+import { getExtensionDownloadUrl, requestWalletConnection, openExtensionsPage } from "@/lib/extension-bridge";
 import { TransactionCardSkeleton, BalanceSkeleton, AddressSkeleton } from "@/components/Skeleton";
 import { QRScanner } from "@/components/QRScanner";
 import SecuritySettings from "@/components/SecuritySettings";
@@ -92,6 +94,7 @@ import {
   FileText,
   TrendingUp,
   Key,
+  Plug,
 } from "lucide-react";
 
 const navigationItems = [
@@ -179,7 +182,10 @@ export default function DashboardPage() {
 
   // Logout confirmation modal
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [extensionStatus, setExtensionStatus] = useState<'active' | 'offline' | 'not-installed'>('not-installed');
+
+  // Extension detection with real-time status
+  const extensionState = useExtensionDetection(3000); // Check every 3 seconds
+
   const [renameAccountIndex, setRenameAccountIndex] = useState<number | null>(null);
   const [newAccountName, setNewAccountName] = useState("");
 
@@ -2856,8 +2862,57 @@ export default function DashboardPage() {
                 </ul>
               </li>
               <li className="mt-auto pt-4 border-t border-gray-200 space-y-3">
-                {/* Browser Extension Status */}
-                {extensionStatus === 'active' ? (
+                {/* Browser Extension Status - 5 States */}
+                {extensionState.status === 'not-installed' ? (
+                  // STATE 1: Not Installed
+                  <a
+                    href={getExtensionDownloadUrl()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-[4px] bg-orange-50 border border-orange-200 hover:bg-orange-100 transition-all group cursor-pointer"
+                  >
+                    <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0"></div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-orange-700">Extension Not Installed</p>
+                      <p className="text-[10px] text-orange-600">Install our browser extension</p>
+                    </div>
+                    <Download className="w-4 h-4 text-orange-600 flex-shrink-0" />
+                  </a>
+                ) : extensionState.status === 'disabled' ? (
+                  // STATE 2: Installed but Disabled
+                  <button
+                    onClick={() => openExtensionsPage()}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[4px] bg-yellow-50 border border-yellow-200 hover:bg-yellow-100 transition-all group"
+                  >
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full flex-shrink-0"></div>
+                    <div className="flex-1 min-w-0 text-left">
+                      <p className="text-xs font-semibold text-yellow-700">Extension Disabled</p>
+                      <p className="text-[10px] text-yellow-600">Click to enable extension</p>
+                    </div>
+                    <ExternalLink className="w-4 h-4 text-yellow-600 flex-shrink-0" />
+                  </button>
+                ) : extensionState.status === 'ready' ? (
+                  // STATE 3: Ready to Connect
+                  <button
+                    onClick={async () => {
+                      const result = await requestWalletConnection();
+                      if (result.success) {
+                        toast.success('Wallet connected!');
+                      } else {
+                        toast.error(result.error || 'Failed to connect');
+                      }
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[4px] bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-all group"
+                  >
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse flex-shrink-0"></div>
+                    <div className="flex-1 min-w-0 text-left">
+                      <p className="text-xs font-semibold text-blue-700">Extension Ready</p>
+                      <p className="text-[10px] text-blue-600">Click to connect wallet</p>
+                    </div>
+                    <Plug className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                  </button>
+                ) : extensionState.status === 'active' ? (
+                  // STATE 4: Active & Connected
                   <div className="flex items-center gap-3 px-3 py-2.5 rounded-[4px] bg-green-50 border border-green-200">
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse flex-shrink-0"></div>
                     <div className="flex-1 min-w-0">
@@ -2866,39 +2921,26 @@ export default function DashboardPage() {
                     </div>
                     <ExternalLink className="w-4 h-4 text-green-600 flex-shrink-0" />
                   </div>
-                ) : extensionStatus === 'offline' ? (
-                  <div className="flex items-center gap-3 px-3 py-2.5 rounded-[4px] bg-red-50 border border-red-200">
-                    <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-red-700">Extension Offline</p>
-                      <p className="text-[10px] text-red-600">Please enable extension</p>
-                    </div>
-                  </div>
                 ) : (
-                  <a
-                    href="https://chrome.google.com/webstore"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-[4px] bg-white border-2 border-[#0019ff] hover:bg-blue-50 transition-all group"
+                  // STATE 5: Error
+                  <button
+                    onClick={async () => {
+                      const result = await requestWalletConnection();
+                      if (result.success) {
+                        toast.success('Reconnected!');
+                      } else {
+                        toast.error(result.error || 'Failed to reconnect');
+                      }
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[4px] bg-red-50 border border-red-200 hover:bg-red-100 transition-all group"
                   >
-                    <svg
-                      className="w-4 h-4 text-[#0019ff] flex-shrink-0"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <rect x="3" y="3" width="7" height="7" rx="1" />
-                      <rect x="14" y="3" width="7" height="7" rx="1" />
-                      <rect x="14" y="14" width="7" height="7" rx="1" />
-                      <rect x="3" y="14" width="7" height="7" rx="1" />
-                    </svg>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-[#0019ff]">Get Wallet in Browser</p>
-                      <p className="text-[10px] text-blue-600">Install extension</p>
+                    <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
+                    <div className="flex-1 min-w-0 text-left">
+                      <p className="text-xs font-semibold text-red-700">Connection Error</p>
+                      <p className="text-[10px] text-red-600">Click to retry connection</p>
                     </div>
-                    <ExternalLink className="w-4 h-4 text-[#0019ff] opacity-60 group-hover:opacity-100 transition-opacity flex-shrink-0" />
-                  </a>
+                    <RefreshCw className="w-4 h-4 text-red-600 flex-shrink-0" />
+                  </button>
                 )}
 
                 {/* Account Selector with Dropdown */}
