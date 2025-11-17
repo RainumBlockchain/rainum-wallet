@@ -825,25 +825,6 @@ export default function DashboardPage() {
     }
   }, [activeTab]);
 
-  // Detect browser extension
-  useEffect(() => {
-    const checkExtension = () => {
-      // Check if window.ethereum exists (MetaMask/extension injected)
-      if (typeof window !== 'undefined' && window.ethereum) {
-        // Extension is installed
-        setExtensionStatus('active');
-      } else {
-        // Extension not detected
-        setExtensionStatus('not-installed');
-      }
-    };
-
-    checkExtension();
-    // Re-check every 5 seconds
-    const interval = setInterval(checkExtension, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
   // Handle re-authentication after page refresh
   const handleReauth = async (e: React.FormEvent) => {
     e.preventDefault();
