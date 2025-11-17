@@ -1155,6 +1155,8 @@ export async function getBlockchainStatus(): Promise<{
   block_height: number;
   network: string;
   connected: boolean;
+  average_block_time?: number;
+  total_accounts?: number;
 } | null> {
   try {
     const res = await fetch(`${getApiBase()}/status`);
@@ -1167,7 +1169,9 @@ export async function getBlockchainStatus(): Promise<{
     return {
       block_height: data.block_height || 0,
       network: data.network || 'mainnet',
-      connected: true
+      connected: true,
+      average_block_time: data.average_block_time,
+      total_accounts: data.total_accounts
     };
   } catch (error) {
     console.error('Failed to fetch blockchain status:', error);

@@ -3307,11 +3307,15 @@ export default function DashboardPage() {
                       <div className="pt-3 border-t border-gray-200 space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-xs text-gray-500">Block Time</span>
-                          <span className="text-xs font-semibold text-black">~12s</span>
+                          <span className="text-xs font-semibold text-black">
+                            {blockchainStatus.averageBlockTime !== undefined
+                              ? `~${blockchainStatus.averageBlockTime}s`
+                              : 'Unknown'}
+                          </span>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-xs text-gray-500">Chain ID</span>
-                          <span className="text-xs font-semibold text-black">{currentNetwork.chainId}</span>
+                          <span className="text-xs font-semibold text-black">{currentNetwork.chainId || 'Unknown'}</span>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-xs text-gray-500">Last Synced</span>

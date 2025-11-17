@@ -13,6 +13,8 @@ interface BlockchainStatus {
   networkName: string;
   connected: boolean;
   loading: boolean;
+  averageBlockTime?: number;
+  totalAccounts?: number;
 }
 
 /**
@@ -27,6 +29,8 @@ export function useBlockchainStatus(refreshInterval: number = 10000): Blockchain
     networkName: currentNetwork.name,
     connected: false,
     loading: true,
+    averageBlockTime: undefined,
+    totalAccounts: undefined,
   });
 
   useEffect(() => {
@@ -45,6 +49,8 @@ export function useBlockchainStatus(refreshInterval: number = 10000): Blockchain
             networkName: currentNetwork.name,
             connected: true,
             loading: false,
+            averageBlockTime: data.average_block_time,
+            totalAccounts: data.total_accounts,
           });
         } else {
           setStatus({
@@ -52,6 +58,8 @@ export function useBlockchainStatus(refreshInterval: number = 10000): Blockchain
             networkName: currentNetwork.name,
             connected: false,
             loading: false,
+            averageBlockTime: undefined,
+            totalAccounts: undefined,
           });
         }
       } catch (error) {
@@ -64,6 +72,8 @@ export function useBlockchainStatus(refreshInterval: number = 10000): Blockchain
           networkName: currentNetwork.name,
           connected: false,
           loading: false,
+          averageBlockTime: undefined,
+          totalAccounts: undefined,
         });
       }
     };
