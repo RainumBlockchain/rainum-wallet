@@ -19,6 +19,7 @@ import { formatBalance } from "@/lib/format-balance";
 import { getWalletSettings, saveWalletSettings, getTransactionLimitSettings, getSessionTimeoutMs, getLoginRateLimitSettings, type WalletSettings } from "@/lib/wallet-settings";
 import { useWebSocket, useNotificationPermission } from "@/hooks/useWebSocket";
 import { useBlockchainStatus } from "@/hooks/useBlockchainStatus";
+import { useCryptoPrices } from "@/hooks/useCryptoPrices";
 import { TransactionCardSkeleton, BalanceSkeleton, AddressSkeleton } from "@/components/Skeleton";
 import { QRScanner } from "@/components/QRScanner";
 import SecuritySettings from "@/components/SecuritySettings";
@@ -106,6 +107,7 @@ const navigationItems = [
     ]
   },
   { name: "Bridge", icon: GitBranch },
+  { name: "Settings", icon: Settings },
 ];
 
 const userNavigation = [
@@ -149,6 +151,9 @@ export default function DashboardPage() {
 
   // Get live blockchain status (block height, network, connection)
   const blockchainStatus = useBlockchainStatus(10000); // Update every 10 seconds
+
+  // Get live crypto prices for trading pairs marquee
+  const { pairs: cryptoPairs, loading: loadingCryptoPrices } = useCryptoPrices(60000); // Update every 60 seconds
 
   // Get saved addresses for current wallet only
   const savedAddresses = address ? getAddressesForWallet(address) : [];
@@ -3010,31 +3015,56 @@ export default function DashboardPage() {
           {/* Separator */}
           <div aria-hidden="true" className="h-6 w-px bg-gray-200 lg:hidden" />
 
-          <div className="flex flex-1 items-center justify-end gap-x-4 lg:gap-x-6">
+          {/* Crypto Trading Pairs Marquee */}
+          <div className="hidden lg:flex flex-1 overflow-hidden mr-4">
+            <div
+              className="flex gap-6"
+              style={{
+                animation: 'marquee-scroll 40s linear infinite',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.animationPlayState = 'paused';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.animationPlayState = 'running';
+              }}
+            >
+              <style dangerouslySetInnerHTML={{
+                __html: `
+                  @keyframes marquee-scroll {
+                    0% {
+                      transform: translateX(0%);
+                    }
+                    100% {
+                      transform: translateX(-50%);
+                    }
+                  }
+                `
+              }} />
+              {/* Duplicate the pairs for seamless loop */}
+              {!loadingCryptoPrices && cryptoPairs.length > 0 && [...cryptoPairs, ...cryptoPairs].map((pair, index) => (
+                <div
+                  key={`${pair.pair}-${index}`}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-[4px] whitespace-nowrap flex-shrink-0"
+                >
+                  <span className="text-xs font-bold text-gray-900">{pair.pair}</span>
+                  <span className="text-xs font-semibold text-gray-700">{pair.displayPrice}</span>
+                  <span className={`text-xs font-semibold ${pair.change24h >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {pair.change24h >= 0 ? '+' : ''}{pair.change24h.toFixed(1)}%
+                  </span>
+                </div>
+              ))}
+              {loadingCryptoPrices && (
+                <div className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-500">
+                  Loading prices...
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-x-4 lg:gap-x-6">
             {/* Quick Actions & Profile */}
             <div className="flex items-center gap-3">
-
-
-              {/* RAIN Price Ticker */}
-              <div className="hidden xl:flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200" style={{ borderRadius: '4px' }}>
-                <span className="text-xs font-bold text-gray-900">RAIN</span>
-                <span className="text-xs font-semibold text-gray-700">${rainPrice.toFixed(2)}</span>
-                <span className={`text-xs font-semibold ${priceChange24h >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {priceChange24h >= 0 ? '+' : ''}{priceChange24h.toFixed(1)}%
-                </span>
-              </div>
-
-              {/* Gas Price Indicator */}
-              <div className="hidden xl:flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200" style={{ borderRadius: '4px' }}>
-                <span className="text-xs">⛽</span>
-                <span className={`text-xs font-semibold ${
-                  gasPrice < 2 ? 'text-green-600' :
-                  gasPrice < 4 ? 'text-yellow-600' :
-                  'text-red-600'
-                }`}>
-                  {gasPrice.toFixed(1)} RAIN
-                </span>
-              </div>
 
               {/* Portfolio Stats */}
               {balance > 0 && (
@@ -3203,8 +3233,8 @@ export default function DashboardPage() {
                         )}
                       </div>
                       <p className="text-xs uppercase tracking-wider font-semibold text-gray-500 mb-2">Wallet Address</p>
-                      <p className="text-sm font-mono text-black mb-3 bg-gray-50 px-3 py-2 rounded-[4px] border border-gray-200">
-                        {address.slice(0, 6)}...{address.slice(-4)}
+                      <p className="text-sm font-mono text-black mb-3 bg-gray-50 px-3 py-2 rounded-[4px] border border-gray-200 break-all">
+                        {address}
                       </p>
                       <div className="flex items-center gap-2 mb-3">
                         <button
