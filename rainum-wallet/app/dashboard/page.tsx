@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useWalletStore } from "@/lib/wallet-store";
 import { useAddressBookStore } from "@/lib/address-book-store";
-import { useNetworkStore, NETWORKS } from "@/lib/network-store";
+import { useNetworkStore, NETWORKS, type Network } from "@/lib/network-store";
 import { toast } from "@/lib/toast-store";
 import { getTransactions, sendTransaction, requestFromFaucet, getBlockchainStatus, deployEVMContract, publishMoveModule } from "@/lib/rainum-api";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -150,8 +150,15 @@ export default function DashboardPage() {
   } = useAddressBookStore();
   const {
     currentNetwork,
-    switchNetwork
+    defaultNetwork,
+    switchNetwork,
+    setDefaultNetwork
   } = useNetworkStore();
+
+  // Network Settings Modal state
+  const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false);
+  const [selectedNetwork, setSelectedNetwork] = useState<Network>(currentNetwork);
+  const [tempDefaultNetwork, setTempDefaultNetwork] = useState<Network | null>(defaultNetwork);
 
   // Get live blockchain status (block height, network, connection)
   const blockchainStatus = useBlockchainStatus(10000); // Update every 10 seconds
@@ -2628,71 +2635,14 @@ export default function DashboardPage() {
             <img src="/press-kit/logos/rainum-logo-blue.svg" alt="Rainum" className="h-7 w-auto" />
 
             {/* Network & Connection Status */}
-            <Menu as="div" className="relative">
-              <MenuButton className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-colors rounded-[4px]">
-                <div className={`w-2 h-2 rounded-full ${networkStatus === 'connected' ? 'bg-green-500' : 'bg-red-500'}`} />
-                <span className="text-xs font-semibold text-gray-700">{currentNetwork.name}</span>
-                <ChevronDown className="w-3 h-3 text-gray-500" />
-              </MenuButton>
-              <MenuItems className="absolute right-0 z-50 mt-2 w-48 origin-top-right bg-white shadow-lg ring-1 ring-black/5 focus:outline-none rounded-[4px]">
-                <div className="py-1">
-                  <MenuItem>
-                    {({ active }) => (
-                      <button
-                        onClick={() => switchNetwork(NETWORKS.LOCAL)}
-                        className={`${
-                          active ? 'bg-gray-100' : ''
-                        } ${
-                          currentNetwork.id === 'local' ? 'bg-blue-50 font-semibold' : ''
-                        } group flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-900`}
-                      >
-                        <div className={`w-2 h-2 rounded-full ${currentNetwork.id === 'local' ? 'bg-blue-600' : 'bg-gray-300'}`} />
-                        Local
-                      </button>
-                    )}
-                  </MenuItem>
-                  <MenuItem>
-                    {({ active }) => (
-                      <button
-                        onClick={() => switchNetwork(NETWORKS.DEVNET)}
-                        className={`${
-                          active ? 'bg-gray-100' : ''
-                        } ${
-                          currentNetwork.id === 'devnet' ? 'bg-blue-50 font-semibold' : ''
-                        } group flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-900`}
-                      >
-                        <div className={`w-2 h-2 rounded-full ${currentNetwork.id === 'devnet' ? 'bg-blue-600' : 'bg-gray-300'}`} />
-                        Devnet
-                      </button>
-                    )}
-                  </MenuItem>
-                  <MenuItem disabled>
-                    {({ active }) => (
-                      <button
-                        disabled
-                        className="group flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-400 cursor-not-allowed"
-                      >
-                        <div className="w-2 h-2 rounded-full bg-gray-300" />
-                        Testnet
-                        <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 bg-gray-200 text-gray-500 rounded-[4px]">Q1 2026</span>
-                      </button>
-                    )}
-                  </MenuItem>
-                  <MenuItem disabled>
-                    {({ active }) => (
-                      <button
-                        disabled
-                        className="group flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-400 cursor-not-allowed"
-                      >
-                        <div className="w-2 h-2 rounded-full bg-gray-300" />
-                        Mainnet
-                        <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 bg-gray-200 text-gray-500 rounded-[4px]">Q3 2026</span>
-                      </button>
-                    )}
-                  </MenuItem>
-                </div>
-              </MenuItems>
-            </Menu>
+            <button
+              onClick={() => setIsNetworkModalOpen(true)}
+              className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-colors rounded-[4px]"
+            >
+              <div className={`w-2 h-2 rounded-full ${networkStatus === 'connected' ? 'bg-green-500' : 'bg-red-500'}`} />
+              <span className="text-xs font-semibold text-gray-700">{currentNetwork.name}</span>
+              <ChevronDown className="w-3 h-3 text-gray-500" />
+            </button>
           </div>
 
           {/* Balance Card Desktop */}
@@ -5420,6 +5370,157 @@ export default function DashboardPage() {
         totalRewards: 0,   // Will be calculated from delegations if available
       }}
     />
+
+    {/* Network Settings Modal */}
+    {isNetworkModalOpen && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div className="bg-white rounded-[4px] shadow-2xl w-full max-w-md mx-4">
+          {/* Modal Header */}
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-bold text-black">Select Network</h2>
+          </div>
+
+          {/* Modal Content */}
+          <div className="px-6 py-4 space-y-3">
+            {/* Local Network */}
+            <button
+              onClick={() => setSelectedNetwork(NETWORKS.LOCAL)}
+              className={`w-full text-left p-4 border-2 rounded-[4px] transition-all ${
+                selectedNetwork.id === 'local'
+                  ? 'border-[#0019ff] bg-blue-50'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                    selectedNetwork.id === 'local'
+                      ? 'border-[#0019ff] bg-[#0019ff]'
+                      : 'border-gray-300'
+                  }`}>
+                    {selectedNetwork.id === 'local' && (
+                      <div className="w-2.5 h-2.5 bg-white rounded-full"></div>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-black">Local</p>
+                    <p className="text-xs text-gray-500">Chain ID: 999999</p>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-3 flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={tempDefaultNetwork?.id === 'local'}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    setTempDefaultNetwork(tempDefaultNetwork?.id === 'local' ? null : NETWORKS.LOCAL);
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-4 h-4 text-[#0019ff] border-gray-300 rounded focus:ring-[#0019ff]"
+                />
+                <label className="text-xs text-gray-600">Set as default network</label>
+              </div>
+            </button>
+
+            {/* Devnet Network */}
+            <button
+              onClick={() => setSelectedNetwork(NETWORKS.DEVNET)}
+              className={`w-full text-left p-4 border-2 rounded-[4px] transition-all ${
+                selectedNetwork.id === 'devnet'
+                  ? 'border-[#0019ff] bg-blue-50'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                    selectedNetwork.id === 'devnet'
+                      ? 'border-[#0019ff] bg-[#0019ff]'
+                      : 'border-gray-300'
+                  }`}>
+                    {selectedNetwork.id === 'devnet' && (
+                      <div className="w-2.5 h-2.5 bg-white rounded-full"></div>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-black">Devnet</p>
+                    <p className="text-xs text-gray-500">Chain ID: 99999</p>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-3 flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={tempDefaultNetwork?.id === 'devnet'}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    setTempDefaultNetwork(tempDefaultNetwork?.id === 'devnet' ? null : NETWORKS.DEVNET);
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-4 h-4 text-[#0019ff] border-gray-300 rounded focus:ring-[#0019ff]"
+                />
+                <label className="text-xs text-gray-600">Set as default network</label>
+              </div>
+            </button>
+
+            {/* Testnet Network (Disabled) */}
+            <div className="w-full text-left p-4 border-2 border-gray-200 rounded-[4px] opacity-50 cursor-not-allowed bg-gray-50">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 rounded-full border-2 border-gray-300"></div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-400">Testnet</p>
+                    <p className="text-xs text-gray-400">Chain ID: 9999</p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-semibold px-2 py-0.5 bg-gray-200 text-gray-500 rounded-[4px]">Q1 2026</span>
+              </div>
+            </div>
+
+            {/* Mainnet Network (Disabled) */}
+            <div className="w-full text-left p-4 border-2 border-gray-200 rounded-[4px] opacity-50 cursor-not-allowed bg-gray-50">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 rounded-full border-2 border-gray-300"></div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-400">Mainnet</p>
+                    <p className="text-xs text-gray-400">Chain ID: 999</p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-semibold px-2 py-0.5 bg-gray-200 text-gray-500 rounded-[4px]">Q3 2026</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Modal Footer */}
+          <div className="px-6 py-4 border-t border-gray-200 flex gap-3 justify-end">
+            <button
+              onClick={() => {
+                setIsNetworkModalOpen(false);
+                setSelectedNetwork(currentNetwork);
+                setTempDefaultNetwork(defaultNetwork);
+              }}
+              className="px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 rounded-[4px] transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                switchNetwork(selectedNetwork);
+                if (tempDefaultNetwork) {
+                  setDefaultNetwork(tempDefaultNetwork);
+                }
+                setIsNetworkModalOpen(false);
+              }}
+              className="px-4 py-2 text-sm font-semibold text-white bg-[#0019ff] hover:bg-[#0015cc] rounded-[4px] transition-colors"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
 
     </ProtectedRoute>
   );

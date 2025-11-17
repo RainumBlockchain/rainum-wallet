@@ -17,11 +17,13 @@ export interface Network {
 
 interface NetworkStore {
   currentNetwork: Network;
+  defaultNetwork: Network | null;
   customNetworks: Network[];
   networkHealth: Record<string, 'healthy' | 'degraded' | 'offline'>;
 
   // Actions
   switchNetwork: (network: Network) => void;
+  setDefaultNetwork: (network: Network) => void;
   addCustomNetwork: (network: Network) => void;
   removeCustomNetwork: (networkId: string) => void;
   updateNetworkHealth: (networkId: string, status: 'healthy' | 'degraded' | 'offline') => void;
@@ -79,6 +81,7 @@ export const useNetworkStore = create<NetworkStore>()(
   persist(
     (set, get) => ({
       currentNetwork: DEFAULT_NETWORK,
+      defaultNetwork: null,
       customNetworks: [],
       networkHealth: {},
 
@@ -92,6 +95,11 @@ export const useNetworkStore = create<NetworkStore>()(
             detail: { network }
           }));
         }
+      },
+
+      setDefaultNetwork: (network: Network) => {
+        console.log(`Setting default network: ${network.name}`);
+        set({ defaultNetwork: network });
       },
 
       addCustomNetwork: (network: Network) => {
@@ -148,6 +156,7 @@ export const useNetworkStore = create<NetworkStore>()(
       name: 'rainum-network-storage',
       partialize: (state) => ({
         currentNetwork: state.currentNetwork,
+        defaultNetwork: state.defaultNetwork,
         customNetworks: state.customNetworks,
       }),
     }
