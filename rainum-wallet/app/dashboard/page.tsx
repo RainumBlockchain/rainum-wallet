@@ -2639,6 +2639,21 @@ export default function DashboardPage() {
                   <MenuItem>
                     {({ active }) => (
                       <button
+                        onClick={() => switchNetwork(NETWORKS.LOCAL)}
+                        className={`${
+                          active ? 'bg-gray-100' : ''
+                        } ${
+                          currentNetwork.id === 'local' ? 'bg-blue-50 font-semibold' : ''
+                        } group flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-900`}
+                      >
+                        <div className={`w-2 h-2 rounded-full ${currentNetwork.id === 'local' ? 'bg-blue-600' : 'bg-gray-300'}`} />
+                        Local
+                      </button>
+                    )}
+                  </MenuItem>
+                  <MenuItem>
+                    {({ active }) => (
+                      <button
                         onClick={() => switchNetwork(NETWORKS.DEVNET)}
                         className={`${
                           active ? 'bg-gray-100' : ''
