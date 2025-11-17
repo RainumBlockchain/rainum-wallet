@@ -2637,11 +2637,13 @@ export default function DashboardPage() {
             {/* Network & Connection Status */}
             <button
               onClick={() => setIsNetworkModalOpen(true)}
-              className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-colors rounded-[4px]"
+              className="group flex items-center gap-2.5 px-4 py-2.5 bg-white hover:bg-blue-50 border-2 border-gray-200 hover:border-[#0019ff] transition-all duration-200 rounded-[4px] shadow-sm hover:shadow-md active:scale-[0.98]"
             >
-              <div className={`w-2 h-2 rounded-full ${networkStatus === 'connected' ? 'bg-green-500' : 'bg-red-500'}`} />
-              <span className="text-xs font-semibold text-gray-700">{currentNetwork.name}</span>
-              <ChevronDown className="w-3 h-3 text-gray-500" />
+              <div className="flex items-center gap-2">
+                <div className={`w-2.5 h-2.5 rounded-full ${networkStatus === 'connected' ? 'bg-green-500' : 'bg-red-500'} animate-pulse`} />
+                <span className="text-sm font-bold text-black group-hover:text-[#0019ff] transition-colors">{currentNetwork.name}</span>
+              </div>
+              <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-[#0019ff] transition-colors" />
             </button>
           </div>
 
