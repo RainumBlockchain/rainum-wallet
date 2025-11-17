@@ -152,8 +152,8 @@ export default function DashboardPage() {
   // Get live blockchain status (block height, network, connection)
   const blockchainStatus = useBlockchainStatus(10000); // Update every 10 seconds
 
-  // Get live crypto prices for trading pairs marquee
-  const { pairs: cryptoPairs, loading: loadingCryptoPrices } = useCryptoPrices(60000); // Update every 60 seconds
+  // Get live crypto prices for trading pairs marquee (WebSocket - instant updates)
+  const { pairs: cryptoPairs, loading: loadingCryptoPrices } = useCryptoPrices();
 
   // Get saved addresses for current wallet only
   const savedAddresses = address ? getAddressesForWallet(address) : [];
@@ -4704,46 +4704,46 @@ export default function DashboardPage() {
                           {/* Stats Cards */}
                           {auditStats && (
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                              <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4">
+                              <div className="bg-white border-2 border-gray-300 rounded-[4px] p-4">
                                 <div className="flex items-center gap-3 mb-2">
                                   <Activity className="w-5 h-5 text-[#0019ff]" />
-                                  <p className="text-sm font-semibold text-blue-900">Total Events</p>
+                                  <p className="text-sm font-semibold text-black">Total Events</p>
                                 </div>
-                                <p className="text-3xl font-bold text-[#0019ff]">{auditStats.total}</p>
-                                <p className="text-xs text-blue-700 mt-1">{auditStats.last24Hours} in last 24h</p>
+                                <p className="text-3xl font-bold text-black">{auditStats.total}</p>
+                                <p className="text-xs text-gray-600 mt-1">{auditStats.last24Hours} in last 24h</p>
                               </div>
 
-                              <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-4">
+                              <div className="bg-white border-2 border-gray-300 rounded-[4px] p-4">
                                 <div className="flex items-center gap-3 mb-2">
-                                  <Check className="w-5 h-5 text-green-600" />
-                                  <p className="text-sm font-semibold text-green-900">Successful Logins</p>
+                                  <Check className="w-5 h-5 text-[#0019ff]" />
+                                  <p className="text-sm font-semibold text-black">Successful Logins</p>
                                 </div>
-                                <p className="text-3xl font-bold text-green-600">{auditStats.byType.login_success || 0}</p>
-                                <p className="text-xs text-green-700 mt-1">All time</p>
+                                <p className="text-3xl font-bold text-black">{auditStats.byType.login_success || 0}</p>
+                                <p className="text-xs text-gray-600 mt-1">All time</p>
                               </div>
 
-                              <div className="bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-lg p-4">
+                              <div className="bg-white border-2 border-gray-300 rounded-[4px] p-4">
                                 <div className="flex items-center gap-3 mb-2">
-                                  <AlertTriangle className="w-5 h-5 text-red-600" />
-                                  <p className="text-sm font-semibold text-red-900">Failed Attempts</p>
+                                  <AlertTriangle className="w-5 h-5 text-[#0019ff]" />
+                                  <p className="text-sm font-semibold text-black">Failed Attempts</p>
                                 </div>
-                                <p className="text-3xl font-bold text-red-600">{auditStats.failedLogins || 0}</p>
-                                <p className="text-xs text-red-700 mt-1">{auditStats.blockedAttempts} blocked</p>
+                                <p className="text-3xl font-bold text-black">{auditStats.failedLogins || 0}</p>
+                                <p className="text-xs text-gray-600 mt-1">{auditStats.blockedAttempts} blocked</p>
                               </div>
 
-                              <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-4">
+                              <div className="bg-white border-2 border-gray-300 rounded-[4px] p-4">
                                 <div className="flex items-center gap-3 mb-2">
-                                  <ArrowRightLeft className="w-5 h-5 text-purple-600" />
-                                  <p className="text-sm font-semibold text-purple-900">Transactions</p>
+                                  <ArrowRightLeft className="w-5 h-5 text-[#0019ff]" />
+                                  <p className="text-sm font-semibold text-black">Transactions</p>
                                 </div>
-                                <p className="text-3xl font-bold text-purple-600">{auditStats.byType.transaction_sent || 0}</p>
-                                <p className="text-xs text-purple-700 mt-1">Sent</p>
+                                <p className="text-3xl font-bold text-black">{auditStats.byType.transaction_sent || 0}</p>
+                                <p className="text-xs text-gray-600 mt-1">Sent</p>
                               </div>
                             </div>
                           )}
 
                           {/* Activity Log */}
-                          <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
+                          <div className="bg-white border-2 border-gray-300 rounded-[4px] p-6">
                             <div className="flex items-center justify-between mb-4">
                               <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                                 <FileText className="w-5 h-5 text-[#0019ff]" />
@@ -4753,7 +4753,7 @@ export default function DashboardPage() {
                             </div>
 
                             {auditLog.length === 0 ? (
-                              <div className="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
+                              <div className="text-center py-12 bg-gray-50 rounded-[4px] border border-gray-300">
                                 <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                                 <p className="text-sm text-gray-600">No activity logged yet</p>
                               </div>
@@ -4762,53 +4762,35 @@ export default function DashboardPage() {
                                 {auditLog.map((entry) => (
                                   <div
                                     key={entry.id}
-                                    className={`p-4 rounded-lg border-2 ${
-                                      entry.category === 'security'
-                                        ? entry.type.includes('failed') || entry.type.includes('blocked')
-                                          ? 'bg-red-50 border-red-200'
-                                          : 'bg-green-50 border-green-200'
-                                        : entry.category === 'transaction'
-                                        ? 'bg-purple-50 border-purple-200'
-                                        : 'bg-blue-50 border-blue-200'
-                                    }`}
+                                    className="p-4 rounded-[4px] border-2 border-gray-300 bg-white"
                                   >
                                     <div className="flex items-start justify-between gap-4">
                                       <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
-                                          <span
-                                            className={`text-xs font-bold uppercase px-2 py-0.5 rounded ${
-                                              entry.category === 'security'
-                                                ? entry.type.includes('failed') || entry.type.includes('blocked')
-                                                  ? 'bg-red-200 text-red-900'
-                                                  : 'bg-green-200 text-green-900'
-                                                : entry.category === 'transaction'
-                                                ? 'bg-purple-200 text-purple-900'
-                                                : 'bg-blue-200 text-blue-900'
-                                            }`}
-                                          >
+                                          <span className="text-xs font-bold uppercase px-2 py-0.5 rounded-[4px] bg-[#0019ff] text-white">
                                             {entry.category}
                                           </span>
                                           <span className="text-xs text-gray-500 font-mono">
                                             {entry.type.replace(/_/g, ' ')}
                                           </span>
                                         </div>
-                                        <p className="text-sm text-gray-900 font-medium mb-1">
+                                        <p className="text-sm text-black font-medium mb-1">
                                           {entry.description}
                                         </p>
                                         {entry.metadata && (
                                           <div className="flex flex-wrap gap-2 mt-2">
                                             {entry.metadata.address && (
-                                              <span className="text-xs bg-white px-2 py-1 rounded border border-gray-200 font-mono">
+                                              <span className="text-xs bg-gray-50 px-2 py-1 rounded-[4px] border border-gray-300 font-mono text-black">
                                                 {entry.metadata.address.slice(0, 10)}...{entry.metadata.address.slice(-8)}
                                               </span>
                                             )}
                                             {entry.metadata.amount && (
-                                              <span className="text-xs bg-white px-2 py-1 rounded border border-gray-200 font-semibold">
+                                              <span className="text-xs bg-gray-50 px-2 py-1 rounded-[4px] border border-gray-300 font-semibold text-black">
                                                 {entry.metadata.amount.toLocaleString()} RAIN
                                               </span>
                                             )}
                                             {entry.metadata.recipient && (
-                                              <span className="text-xs bg-white px-2 py-1 rounded border border-gray-200 font-mono">
+                                              <span className="text-xs bg-gray-50 px-2 py-1 rounded-[4px] border border-gray-300 font-mono text-black">
                                                 → {entry.metadata.recipient.slice(0, 8)}...
                                               </span>
                                             )}

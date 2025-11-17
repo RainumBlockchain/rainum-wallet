@@ -37,7 +37,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline'", // unsafe-inline needed for Tailwind
               "img-src 'self' data: https://cryptologos.cc https://assets.coingecko.com",
               "font-src 'self' data:",
-              "connect-src 'self' ws://localhost:* wss://localhost:* http://localhost:* http://127.0.0.1:* ws://127.0.0.1:* https:",
+              "connect-src 'self' ws://localhost:* wss://localhost:* http://localhost:* http://127.0.0.1:* ws://127.0.0.1:* https: wss://stream.binance.com:9443 wss://api.coingecko.com",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",
