@@ -52,13 +52,13 @@ export default function AIChatWidget({
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "👋 Hi there! I'm your Rainum assistant.\n\nI'm here to help you navigate your wallet, understand blockchain concepts, and make transactions easier.\n\nWhat would you like to do today?",
+      content: "👋 Hi there! I'm your Rainum assistant.\n\nI can help you with everything in your wallet - from basic operations to advanced features like smart contracts and staking.\n\n💡 Try asking:\n• \"What can you do?\" - See all features\n• \"Discover features\" - Find new capabilities\n• \"How to send RAIN?\" - Step-by-step guides\n• \"Explain staking\" - Learn about rewards\n\nWhat would you like to explore?",
       timestamp: new Date(),
       suggestions: [
+        "What can you do?",
+        "Discover features",
         "Check my balance",
-        "Show my transactions",
-        "How do I stake RAIN?",
-        "What's my address?",
+        "How to send RAIN?",
       ],
     },
   ]);
@@ -78,31 +78,28 @@ export default function AIChatWidget({
 
   const quickActions: QuickAction[] = [
     {
+      icon: <Sparkles size={20} />,
+      label: "Discover Features",
+      description: "See what's new and available",
+      action: () => handleQuickAction("Discover features"),
+    },
+    {
+      icon: <BookOpen size={20} />,
+      label: "Complete Guide",
+      description: "View all capabilities",
+      action: () => handleQuickAction("What can you do?"),
+    },
+    {
       icon: <Wallet size={20} />,
       label: "Check Balance",
-      description: "View your current RAIN balance",
+      description: "View your RAIN & USD value",
       action: () => handleQuickAction("What's my balance?"),
     },
     {
-      icon: <ArrowRightLeft size={20} />,
-      label: "Recent Activity",
-      description: "See your latest transactions",
-      action: () => handleQuickAction("Show my last 5 transactions"),
-    },
-    {
       icon: <TrendingUp size={20} />,
-      label: "Staking Info",
-      description: "Check your staking rewards",
-      action: () => handleQuickAction("How much have I earned from staking?"),
-    },
-    {
-      icon: <Settings size={20} />,
-      label: "Settings",
-      description: "Open wallet settings",
-      action: () => {
-        onNavigate?.("Settings");
-        addMessage("assistant", "✅ Opening Settings...");
-      },
+      label: "Staking Guide",
+      description: "Learn how to earn rewards",
+      action: () => handleQuickAction("How does staking work?"),
     },
   ];
 
@@ -260,24 +257,62 @@ export default function AIChatWidget({
 
   const getSuggestions = (input: string): string[] => {
     const lower = input.toLowerCase();
+    const balance = currentBalance ?? wallet?.balance ?? 0;
+    const hasTransactions = recentTransactions && recentTransactions.length > 0;
+
+    // Context-aware suggestions based on user's question
+    if (lower.includes("help") || lower.includes("what can you do")) {
+      return ["Discover features", "Wallet features", "How to send RAIN?", "Explain smart contracts"];
+    }
+
+    if (lower.includes("feature") || lower.includes("discover")) {
+      return ["Wallet features", "Smart contracts", "Network switching", "Multi-account"];
+    }
 
     if (lower.includes("balance")) {
-      return ["Send RAIN", "Stake RAIN", "Show transactions"];
+      if (balance > 0) {
+        return ["Send RAIN", "Stake RAIN", "Show transactions", "Create new account"];
+      } else {
+        return ["Request test tokens", "How to get RAIN?", "What is faucet?"];
+      }
     }
 
     if (lower.includes("transaction")) {
-      return ["Check balance", "Send RAIN", "What are gas fees?"];
+      return ["How to send RAIN?", "What are gas fees?", "Privacy levels", "Check balance"];
     }
 
     if (lower.includes("staking") || lower.includes("stake")) {
-      return ["Start staking", "Show my balance", "Which validators?"];
+      return ["Explain validators", "Start staking", "Show my balance", "APY calculation"];
     }
 
     if (lower.includes("send")) {
-      return ["Check balance first", "What are gas fees?", "Show recent transactions"];
+      return ["Transaction guide", "What are gas fees?", "Privacy levels", "Save addresses"];
     }
 
-    return ["Check balance", "Show transactions", "Help"];
+    if (lower.includes("smart contract") || lower.includes("evm") || lower.includes("move")) {
+      return ["Deploy contract", "Contract library", "EVM vs Move", "What is Solidity?"];
+    }
+
+    if (lower.includes("network") || lower.includes("mainnet") || lower.includes("testnet")) {
+      return ["Switch networks", "What is devnet?", "Chain IDs", "Default network"];
+    }
+
+    if (lower.includes("account") || lower.includes("multi")) {
+      return ["Create account", "Switch account", "Rename account", "HD wallet"];
+    }
+
+    if (lower.includes("address book") || lower.includes("save address")) {
+      return ["How to save addresses?", "View saved addresses", "Transaction guide"];
+    }
+
+    // Default contextual suggestions based on user state
+    if (balance === 0) {
+      return ["Request test tokens", "How to get RAIN?", "Discover features"];
+    } else if (!hasTransactions) {
+      return ["How to send RAIN?", "Transaction guide", "Staking guide"];
+    } else {
+      return ["Discover features", "Smart contracts", "Multi-account", "Network switching"];
+    }
   };
 
   const executeCommand = (command: { type: string; params: any }, originalInput: string): Message => {
@@ -474,7 +509,35 @@ export default function AIChatWidget({
     const q = question.toLowerCase();
 
     if (q.includes("help") || q.includes("what can you do")) {
-      return "💡 I can help you with:\n\n💰 Wallet Operations\n• Check your balance\n• View your address\n• See transaction history\n\n💸 Transactions\n• Send RAIN to others\n• Explain gas fees\n• Track transaction status\n\n🎯 Staking\n• Start staking\n• Check rewards\n• Manage delegations\n\n🔐 Security\n• Understand seed phrases\n• Biometric authentication\n• Privacy features\n\nJust ask me anything or click the buttons below!";
+      return "💡 Complete Rainum Wallet Guide\n\n💰 WALLET OPERATIONS\n• Check balance & USD value\n• View wallet address & QR code\n• Copy address to clipboard\n• Multi-account management\n• Create/rename accounts\n• Switch between accounts\n\n💸 TRANSACTIONS\n• Send RAIN tokens\n• Request test tokens (faucet)\n• Transaction history\n• Filter by type (sent/received)\n• Gas fee estimation\n• Privacy levels (0-2 ZKP)\n\n🎯 STAKING & REWARDS\n• Delegate to validators\n• View staking rewards\n• Withdraw rewards\n• Validator tiers (Bronze→Platinum)\n• Unstake tokens\n• Track APY/returns\n\n🏛️ SMART CONTRACTS\n• EVM contracts (Solidity)\n• Move VM contracts\n• Deploy contracts\n• Interact with contracts\n• Contract library\n\n⚙️ SETTINGS & SECURITY\n• Network switching (Local/Devnet/Testnet/Mainnet)\n• Set default network\n• Biometric authentication\n• Export/backup wallet\n• Seed phrase security\n• Address book\n\n📊 PORTFOLIO & ANALYTICS\n• Real-time balance tracking\n• Transaction statistics\n• Staking performance\n• Block explorer integration\n\nTry: \"Show me wallet features\", \"Explain staking\", \"How to send RAIN?\"";
+    }
+
+    if (q.includes("feature") || q.includes("discover") || q.includes("what's new")) {
+      return "🎯 Feature Discovery\n\nLet me show you what's available:\n\n🔥 CORE FEATURES\n• Multi-Account HD Wallet\n• Send/Receive RAIN\n• Staking & Rewards\n• Transaction History\n\n✨ ADVANCED FEATURES\n• Privacy Transactions (ZKP)\n• Smart Contract Deployment\n• EVM & Move VM Support\n• Network Switching\n• Address Book\n\n🆕 LATEST ADDITIONS\n• USD Balance Display ($0.10/RAIN)\n• Network Settings Modal\n• Dynamic Account Types\n• Real-time Block Data\n• Extension Detection\n\n💎 COMING SOON\n• NFT Support\n• Token Swaps\n• DApp Browser\n• Hardware Wallet Support\n\nWhat would you like to learn more about?";
+    }
+
+    if (q.includes("wallet features") || q.includes("wallet capabilities")) {
+      return "🔐 Wallet Features Deep Dive\n\n📍 MULTI-ACCOUNT SYSTEM\n• HD Wallet (BIP39/BIP44)\n• Unlimited accounts from one seed\n• Import external accounts\n• Account nicknames\n\n💰 BALANCE MANAGEMENT\n• Real-time balance updates\n• USD conversion ($0.10/RAIN)\n• Multi-account total\n• Transaction history per account\n\n🔒 SECURITY\n• AES-256 encryption\n• Biometric authentication\n• Non-custodial (you own keys)\n• Secure seed phrase backup\n\n📱 USER EXPERIENCE\n• Clean, modern interface\n• Quick copy address\n• QR code generation\n• Transaction notifications\n\nNeed help with any specific feature?";
+    }
+
+    if (q.includes("transaction") && (q.includes("how") || q.includes("guide") || q.includes("tutorial"))) {
+      return "📤 How to Send Transactions\n\n1️⃣ PREPARE\n• Check your balance\n• Copy recipient address\n• Decide amount to send\n\n2️⃣ CREATE TRANSACTION\n• Go to Wallet tab\n• Enter recipient address\n• Enter amount in RAIN\n• Choose privacy level:\n  - Level 0: Public (cheapest)\n  - Level 1: Partial privacy\n  - Level 2: Full privacy (ZK-SNARKs)\n\n3️⃣ REVIEW\n• Check recipient address\n• Verify amount\n• Review gas fees\n• Total cost = Amount + Gas + ZKP fee\n\n4️⃣ CONFIRM\n• Click 'Send Transaction'\n• Confirm in popup\n• Wait for confirmation\n• View in transaction history\n\n💡 TIP: Large transactions (>1000 RAIN) require extra confirmation!\n\nReady to send?";
+    }
+
+    if (q.includes("smart contract") || q.includes("evm") || q.includes("move vm")) {
+      return "🏛️ Smart Contracts on Rainum\n\n🔷 EVM CONTRACTS (Ethereum Compatible)\n• Write in Solidity\n• Deploy EVM bytecode\n• Interact with Ethereum tools\n• Metamask compatible\n\n🟣 MOVE VM CONTRACTS (Aptos/Sui Style)\n• Write in Move language\n• Resource-oriented programming\n• Enhanced security model\n• Better composability\n\n⚡ DEPLOYMENT PROCESS\n1. Write your contract code\n2. Compile to bytecode\n3. Go to Smart Contracts tab\n4. Choose EVM or Move\n5. Deploy with gas fee\n\n📚 CONTRACT LIBRARY\n• Pre-built templates\n• Token standards\n• DeFi primitives\n• DAO governance\n\nNeed help deploying?";
+    }
+
+    if (q.includes("network") || q.includes("mainnet") || q.includes("testnet") || q.includes("devnet")) {
+      return "🌐 Network Management\n\n📡 AVAILABLE NETWORKS\n\n🟢 Local (Chain ID: 999999)\n• Development testing\n• http://localhost:8080\n• Free unlimited tokens\n\n🔵 Devnet (Chain ID: 99999)\n• Public test network\n• https://api.rainum.com\n• Current default network\n\n🟡 Testnet (Chain ID: 9999)\n• Pre-production testing\n• Coming Q1 2026\n\n🔴 Mainnet (Chain ID: 999)\n• Real value transactions\n• Coming Q3 2026\n\n⚙️ HOW TO SWITCH\n• Click network button (top sidebar)\n• Select desired network\n• Optionally set as default\n• Wallet reconnects automatically\n\n💡 Your transactions are network-specific!\n\nWant to switch networks?";
+    }
+
+    if (q.includes("address book") || q.includes("saved address") || q.includes("contact")) {
+      return "📇 Address Book Feature\n\n💾 SAVE ADDRESSES\n• Save frequently-used addresses\n• Add nicknames/labels\n• Organize by category\n• Quick access when sending\n\n✏️ HOW TO USE\n1. Send a transaction\n2. Click 'Save address' checkbox\n3. Add a nickname\n4. Address saved for future use\n\n🔍 BENEFITS\n• No more copy-paste errors\n• Faster transactions\n• Better organization\n• Address validation\n\n📱 AUTO-COMPLETE\nWhen sending, start typing a nickname and saved addresses appear!\n\nWant to see your saved addresses?";
+    }
+
+    if (q.includes("multi-account") || q.includes("create account") || q.includes("switch account")) {
+      return "👥 Multi-Account Management\n\n🎯 WHY MULTIPLE ACCOUNTS?\n• Separate personal/business funds\n• Privacy & organization\n• Different purposes\n• All from ONE seed phrase\n\n➕ CREATE NEW ACCOUNT\n1. Click account dropdown (sidebar)\n2. Click 'Create New Account'\n3. Account instantly generated\n4. Rename if desired\n\n🔄 SWITCH ACCOUNTS\n• Click account dropdown\n• Select desired account\n• Balance/transactions update\n• Each account has unique address\n\n✏️ RENAME ACCOUNTS\n• Click edit icon next to account\n• Enter new name\n• Better organization\n\n💰 TOTAL BALANCE\nSee combined balance across ALL accounts in sidebar!\n\nWant to create a new account?";
     }
 
     if (q.includes("how") && q.includes("stake")) {
@@ -501,7 +564,39 @@ export default function AIChatWidget({
       return "🏆 About Validators\n\nValidators secure the network and produce blocks.\n\nTiers:\n• Bronze - Base rewards\n• Silver - 1.5x rewards\n• Gold - 2x rewards\n• Platinum - 3x rewards\n\nHigher tier = more stake required = better rewards.";
     }
 
-    return "I'm here to help! Try asking:\n• \"Check my balance\"\n• \"How does staking work?\"\n• \"What are gas fees?\"\n• \"Show my transactions\"\n\nOr click one of the suggestions below!";
+    if (q.includes("privacy level") || q.includes("level 0") || q.includes("level 1") || q.includes("level 2")) {
+      return "🔐 Privacy Levels Explained\n\nWhen sending RAIN, choose your privacy:\n\n📖 LEVEL 0 - Public\n• Fully transparent (like Bitcoin)\n• Lowest gas fees\n• All details visible on-chain\n• Best for: Regular transfers\n\n🔒 LEVEL 1 - Partial Privacy\n• Some details hidden\n• Medium gas fees\n• Amount/timing obscured\n• Best for: Business transactions\n\n🔐 LEVEL 2 - Full Privacy\n• Complete anonymity\n• Highest gas fees (ZK-SNARKs)\n• Zero-knowledge proofs\n• Best for: Maximum privacy\n\n💡 Choose based on your needs vs cost!";
+    }
+
+    if (q.includes("apy") || q.includes("calculate") || q.includes("return") || q.includes("profit")) {
+      return "📊 Staking Returns (APY)\n\n💰 HOW IT'S CALCULATED\nAPY depends on:\n• Validator tier (Bronze→Platinum)\n• Total network stake\n• Block production rate\n• Your delegation amount\n\n🎯 EXAMPLE RETURNS\nIf you stake 1,000 RAIN:\n• Bronze Validator: ~5% APY\n• Silver Validator: ~7.5% APY\n• Gold Validator: ~10% APY\n• Platinum Validator: ~15% APY\n\n⏰ REWARD FREQUENCY\n• Rewards earned per block\n• Claim anytime (no lock period)\n• Compound for better returns\n\n💡 TIP: Higher tier = more rewards but validator may be full!\n\nReady to start earning?";
+    }
+
+    if (q.includes("evm vs move") || q.includes("difference between") || q.includes("which vm")) {
+      return "🔷 EVM vs 🟣 Move VM\n\n🔷 ETHEREUM VIRTUAL MACHINE (EVM)\n✅ Pros:\n• Industry standard (Solidity)\n• Huge ecosystem & tools\n• Familiar to most developers\n• Metamask compatible\n\n⚠️ Cons:\n• Reentrancy vulnerabilities\n• No resource safety\n• Integer overflow risks\n\n🟣 MOVE VIRTUAL MACHINE\n✅ Pros:\n• Resource-oriented programming\n• Built-in safety features\n• No reentrancy attacks\n• Better formal verification\n• Linear types system\n\n⚠️ Cons:\n• Newer, smaller ecosystem\n• Steeper learning curve\n\n🎯 CHOOSE BASED ON:\n• EVM: Ethereum compatibility needed\n• Move: Maximum security required\n\nBoth are fully supported on Rainum!";
+    }
+
+    if (q.includes("faucet") || q.includes("test token") || q.includes("get rain")) {
+      return "💧 Testnet Faucet\n\n🎁 FREE TEST TOKENS\nGet RAIN tokens to try the network!\n\n📍 HOW TO USE\n1. Make sure you're on Local/Devnet\n2. Go to Wallet tab\n3. Click 'Request Test Tokens'\n4. Tokens arrive in seconds!\n\n⚡ LIMITS\n• Request every 24 hours\n• Max 1000 RAIN per request\n• Only on test networks\n\n💡 WHAT TO DO WITH THEM\n• Practice sending transactions\n• Try staking\n• Deploy smart contracts\n• Test privacy features\n\n⚠️ TEST TOKENS HAVE NO REAL VALUE\nThey're for learning and testing only!\n\nReady to request tokens?";
+    }
+
+    if (q.includes("solidity") || q.includes("deploy contract") || q.includes("contract library")) {
+      return "🏗️ Smart Contract Development\n\n📝 SUPPORTED LANGUAGES\n• Solidity (EVM contracts)\n• Move (Move VM contracts)\n• Soon: Rust, Vyper\n\n🔧 DEPLOYMENT STEPS\n1. Write your contract code\n2. Compile to bytecode\n3. Test on Local network first\n4. Deploy to Devnet/Mainnet\n5. Verify contract (optional)\n\n📚 CONTRACT LIBRARY\nPre-built templates:\n• ERC-20 Token Standard\n• ERC-721 NFT Standard\n• Multi-sig Wallet\n• DAO Governance\n• Staking Pool\n• DEX (Swap contracts)\n\n💡 TIPS\n• Always test on Local first\n• Audit important contracts\n• Set gas limits carefully\n• Keep private keys secure\n\nNeed help getting started?";
+    }
+
+    if (q.includes("hd wallet") || q.includes("bip39") || q.includes("bip44") || q.includes("derive")) {
+      return "🔑 HD Wallet (Hierarchical Deterministic)\n\n🌳 HOW IT WORKS\nOne seed phrase → Unlimited accounts!\n\n📐 DERIVATION PATH\nBIP44 standard:\nm/44'/60'/0'/0/N\n• m: Master key\n• 44': BIP44 standard\n• 60': Ethereum coin type\n• 0': Account (hardened)\n• 0: External chain\n• N: Address index\n\n✨ BENEFITS\n• One backup for all accounts\n• Deterministic (same seed = same accounts)\n• Privacy through multiple addresses\n• Easy account management\n\n🔐 SECURITY\nYour 24-word seed phrase:\n• Generates ALL account keys\n• Never stored on server\n• Encrypted locally (AES-256)\n• Never share with anyone!\n\n💡 Each account has its own:\n• Unique address\n• Separate balance\n• Independent transaction history\n\nAll from ONE seed phrase!";
+    }
+
+    if (q.includes("chain id") || q.includes("999") || q.includes("9999")) {
+      return "🔗 Chain IDs Explained\n\n📡 RAINUM CHAIN ID STRUCTURE\n\n🟢 Local: 999999 (6 nines)\n• Development environment\n• Localhost testing\n• Reset anytime\n\n🔵 Devnet: 99999 (5 nines)\n• Public test network\n• Stable test environment\n• Free test tokens\n\n🟡 Testnet: 9999 (4 nines)\n• Pre-production testing\n• Coming Q1 2026\n• Matches mainnet features\n\n🔴 Mainnet: 999 (3 nines)\n• Production network\n• Real value\n• Coming Q3 2026\n\n❓ WHY CHAIN IDs?\n• Prevent replay attacks\n• Network identification\n• Wallet compatibility\n• Transaction signing\n\n💡 Always verify you're on the correct network before sending!\n\nCurrent network shown in top sidebar.";
+    }
+
+    if (q.includes("default network") || q.includes("set network") || q.includes("persist network")) {
+      return "⚙️ Default Network Setting\n\n🎯 WHAT IT DOES\nSet which network opens automatically when you launch the wallet.\n\n📍 HOW TO SET\n1. Click network button (top sidebar)\n2. Select desired network\n3. Check 'Set as default'\n4. Click Save\n\n✅ BENEFITS\n• No need to switch every time\n• Faster workflow\n• Prevent wrong-network mistakes\n\n💡 RECOMMENDATIONS\n• Developers: Set Local as default\n• Testers: Set Devnet as default\n• Future: Set Mainnet as default\n\n🔄 CHANGE ANYTIME\nYou can still manually switch networks - the default only affects startup!\n\nWant to set your default now?";
+    }
+
+    return "I'm here to help! Try asking:\n• \"What can you do?\" - See all features\n• \"Discover features\" - Find new capabilities\n• \"How to send RAIN?\" - Transaction guide\n• \"Explain staking\" - Earn rewards\n• \"Smart contracts\" - Deploy code\n• \"Multi-account\" - Multiple wallets\n\nOr click one of the suggestions below!";
   };
 
   return (
