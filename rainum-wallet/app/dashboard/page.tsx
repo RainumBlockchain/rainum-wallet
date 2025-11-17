@@ -3309,7 +3309,7 @@ export default function DashboardPage() {
                           <span className="text-xs text-gray-500">Block Time</span>
                           <span className="text-xs font-semibold text-black">
                             {blockchainStatus.averageBlockTime !== undefined
-                              ? `~${blockchainStatus.averageBlockTime}s`
+                              ? `${blockchainStatus.averageBlockTime}s`
                               : 'Unknown'}
                           </span>
                         </div>
