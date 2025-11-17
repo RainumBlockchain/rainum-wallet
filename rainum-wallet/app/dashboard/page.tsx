@@ -106,7 +106,6 @@ const navigationItems = [
     ]
   },
   { name: "Bridge", icon: GitBranch },
-  { name: "Settings", icon: Settings },
 ];
 
 const userNavigation = [
@@ -175,6 +174,7 @@ export default function DashboardPage() {
 
   // Logout confirmation modal
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [extensionStatus, setExtensionStatus] = useState<'active' | 'offline' | 'not-installed'>('not-installed');
   const [renameAccountIndex, setRenameAccountIndex] = useState<number | null>(null);
   const [newAccountName, setNewAccountName] = useState("");
 
@@ -814,6 +814,25 @@ export default function DashboardPage() {
     }
   }, [activeTab]);
 
+  // Detect browser extension
+  useEffect(() => {
+    const checkExtension = () => {
+      // Check if window.ethereum exists (MetaMask/extension injected)
+      if (typeof window !== 'undefined' && window.ethereum) {
+        // Extension is installed
+        setExtensionStatus('active');
+      } else {
+        // Extension not detected
+        setExtensionStatus('not-installed');
+      }
+    };
+
+    checkExtension();
+    // Re-check every 5 seconds
+    const interval = setInterval(checkExtension, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Handle re-authentication after page refresh
   const handleReauth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1384,13 +1403,13 @@ export default function DashboardPage() {
   return (
     <ProtectedRoute>
       <div className="bg-white min-h-screen">
-      {/* Security Alert Banner */}
-      <div className="bg-yellow-500">
-        <div className="max-w-7xl mx-auto px-4 py-2.5">
+      {/* Security Alert Banner - Full Width */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-yellow-500">
+        <div className="px-4 py-2.5">
           <p className="text-xs text-black text-center font-medium">
             Protect your funds. Make sure the URL is{' '}
             <Lock className="inline w-3 h-3 mb-0.5 mx-1" />{' '}
-            <span className="font-bold bg-yellow-600 px-2 py-0.5 rounded-[4px]">https://wallet.rainum.com</span>
+            <span className="font-extrabold bg-yellow-600 px-2 py-0.5 rounded-[4px]">https://wallet.rainum.com</span>
           </p>
         </div>
       </div>
@@ -1816,13 +1835,13 @@ export default function DashboardPage() {
       </Dialog>
 
       {/* Mobile sidebar */}
-      <Dialog open={sidebarOpen} onClose={setSidebarOpen} className="relative z-50 lg:hidden">
+      <Dialog open={sidebarOpen} onClose={setSidebarOpen} className="relative z-40 lg:hidden">
         <DialogBackdrop
           transition
-          className="fixed inset-0 bg-gray-900/80 transition-opacity duration-300 ease-linear data-closed:opacity-0"
+          className="fixed top-9 left-0 right-0 bottom-0 bg-gray-900/80 transition-opacity duration-300 ease-linear data-closed:opacity-0"
         />
 
-        <div className="fixed inset-0 flex">
+        <div className="fixed top-9 left-0 right-0 bottom-0 flex">
           <DialogPanel
             transition
             className="relative mr-16 flex w-full max-w-xs flex-1 transform transition duration-300 ease-in-out data-closed:-translate-x-full"
@@ -1888,7 +1907,7 @@ export default function DashboardPage() {
               </div>
 
               {/* Balance Card Mobile */}
-              <div className="bg-gradient-to-br from-[#0019ff] via-blue-800 to-black rounded-[4px] p-6 text-white shadow-xl shadow-[#0019ff]/20">
+              <div className="bg-[#0019ff] rounded-[4px] p-6 text-white">
                 <div className="flex items-center justify-between mb-4">
                   <p className="text-xs uppercase tracking-widest text-white/90 font-bold">Total Balance</p>
                   <Wallet className="w-5 h-5 text-white/70" />
@@ -2136,21 +2155,12 @@ export default function DashboardPage() {
                       </Menu>
                     )}
 
-                    <a
-                      href="#"
-                      className="group -mx-2 flex gap-x-3 rounded-[4px] p-3 text-sm font-semibold text-gray-700 hover:bg-gray-100 hover:text-black transition-all duration-200 hover:shadow-sm"
-                    >
-                      <Settings
-                        aria-hidden="true"
-                        className="size-5 shrink-0 text-gray-400 group-hover:text-black group-hover:rotate-90 transition-all duration-300"
-                      />
-                      Settings
-                    </a>
+                    {/* Disconnect Button */}
                     <button
                       onClick={handleDisconnect}
-                      className="group -mx-2 flex gap-x-3 rounded-[4px] p-3 text-sm font-semibold text-gray-700 hover:bg-red-50 hover:text-red-600 w-full transition-all duration-200 border border-transparent hover:border-red-200"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-[4px] bg-white border border-gray-300 hover:border-red-500 hover:bg-red-50 text-gray-700 hover:text-red-600 font-semibold text-sm transition-all"
                     >
-                      <LogOut aria-hidden="true" className="size-5 shrink-0 text-gray-400 group-hover:text-red-600 group-hover:-translate-x-1 transition-all duration-200" />
+                      <LogOut className="w-4 h-4" />
                       Disconnect
                     </button>
                   </li>
@@ -2619,60 +2629,66 @@ export default function DashboardPage() {
       </Dialog>
 
       {/* Static sidebar for desktop */}
-      <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
+      <div className="hidden lg:fixed lg:top-9 lg:bottom-0 lg:left-0 lg:z-40 lg:flex lg:w-72 lg:flex-col">
         <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white/95 backdrop-blur-xl px-6 pb-4">
           <div className="flex h-16 shrink-0 items-center justify-between">
             <img src="/press-kit/logos/rainum-logo-blue.svg" alt="Rainum" className="h-7 w-auto" />
 
-            {/* Network Selector Desktop */}
+            {/* Network & Connection Status */}
             <Menu as="div" className="relative">
-              <MenuButton className="flex items-center gap-2 px-3 py-1.5 bg-black hover:bg-gray-900 rounded transition-all">
-                <div className="w-1.5 h-1.5 bg-[#0019ff] animate-pulse"></div>
-                <span className="text-xs font-semibold text-white">Devnet</span>
-                <ChevronDown className="w-3 h-3 text-gray-400" />
+              <MenuButton className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-colors rounded-[4px]">
+                <div className={`w-2 h-2 rounded-full ${networkStatus === 'connected' ? 'bg-green-500' : 'bg-red-500'}`} />
+                <span className="text-xs font-semibold text-gray-700">{currentNetwork.name}</span>
+                <ChevronDown className="w-3 h-3 text-gray-500" />
               </MenuButton>
-
-              <MenuItems
-                transition
-                className="absolute right-0 z-10 mt-2 w-52 origin-top-right rounded bg-black py-1 shadow-xl transition data-closed:scale-95 data-closed:opacity-0"
-              >
-                <MenuItem>
-                  <button className="flex items-center gap-2 px-4 py-2 text-sm w-full bg-gray-900 text-white font-semibold">
-                    <div className="w-1.5 h-1.5 bg-[#0019ff]"></div>
-                    <span>Devnet</span>
-                    <Check className="w-4 h-4 ml-auto text-[#0019ff]" />
-                  </button>
-                </MenuItem>
-                <MenuItem>
-                  <button
-                    disabled
-                    className="flex items-center gap-2 px-4 py-2 text-sm w-full text-gray-500 cursor-not-allowed"
-                  >
-                    <div className="w-1.5 h-1.5 bg-gray-600"></div>
-                    <span>Testnet</span>
-                    <span className="ml-auto px-2 py-0.5 bg-[#0019ff] text-white text-[9px] font-bold rounded">
-                      Q1 2026
-                    </span>
-                  </button>
-                </MenuItem>
-                <MenuItem>
-                  <button
-                    disabled
-                    className="flex items-center gap-2 px-4 py-2 text-sm w-full text-gray-500 cursor-not-allowed"
-                  >
-                    <div className="w-1.5 h-1.5 bg-gray-600"></div>
-                    <span>Mainnet</span>
-                    <span className="ml-auto px-2 py-0.5 bg-[#0019ff] text-white text-[9px] font-bold rounded">
-                      Q2 2026
-                    </span>
-                  </button>
-                </MenuItem>
+              <MenuItems className="absolute right-0 z-50 mt-2 w-48 origin-top-right bg-white shadow-lg ring-1 ring-black/5 focus:outline-none rounded-[4px]">
+                <div className="py-1">
+                  <MenuItem>
+                    {({ active }) => (
+                      <button
+                        onClick={() => switchNetwork(NETWORKS.DEVNET)}
+                        className={`${
+                          active ? 'bg-gray-100' : ''
+                        } ${
+                          currentNetwork.id === 'devnet' ? 'bg-blue-50 font-semibold' : ''
+                        } group flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-900`}
+                      >
+                        <div className={`w-2 h-2 rounded-full ${currentNetwork.id === 'devnet' ? 'bg-blue-600' : 'bg-gray-300'}`} />
+                        Devnet
+                      </button>
+                    )}
+                  </MenuItem>
+                  <MenuItem disabled>
+                    {({ active }) => (
+                      <button
+                        disabled
+                        className="group flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-400 cursor-not-allowed"
+                      >
+                        <div className="w-2 h-2 rounded-full bg-gray-300" />
+                        Testnet
+                        <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 bg-gray-200 text-gray-500 rounded-[4px]">Q1 2026</span>
+                      </button>
+                    )}
+                  </MenuItem>
+                  <MenuItem disabled>
+                    {({ active }) => (
+                      <button
+                        disabled
+                        className="group flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-400 cursor-not-allowed"
+                      >
+                        <div className="w-2 h-2 rounded-full bg-gray-300" />
+                        Mainnet
+                        <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 bg-gray-200 text-gray-500 rounded-[4px]">Q3 2026</span>
+                      </button>
+                    )}
+                  </MenuItem>
+                </div>
               </MenuItems>
             </Menu>
           </div>
 
           {/* Balance Card Desktop */}
-          <div className="bg-gradient-to-br from-[#0019ff] via-blue-800 to-black rounded-[4px] p-6 text-white shadow-xl shadow-[#0019ff]/20 hover:shadow-[#0019ff]/30 transition-all duration-300">
+          <div className="bg-[#0019ff] rounded-[4px] p-6 text-white transition-all duration-300">
             <div className="flex items-center justify-between mb-4">
               <p className="text-xs uppercase tracking-widest text-white/90 font-bold">Total Balance</p>
               <Wallet className="w-5 h-5 text-white/70" />
@@ -2834,24 +2850,153 @@ export default function DashboardPage() {
                   ))}
                 </ul>
               </li>
-              <li className="mt-auto space-y-2 pt-4 border-t border-gray-200">
-                <a
-                  href="#"
-                  className="group -mx-2 flex gap-x-3 rounded p-3 text-sm font-semibold text-gray-700 hover:bg-gray-100 hover:text-black transition-all duration-200 hover:shadow-sm"
+              <li className="mt-auto pt-4 border-t border-gray-200 space-y-3">
+                {/* Browser Extension Status */}
+                {extensionStatus === 'active' ? (
+                  <div className="flex items-center gap-3 px-3 py-2.5 rounded-[4px] bg-green-50 border border-green-200">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse flex-shrink-0"></div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-green-700">Extension Active</p>
+                      <p className="text-[10px] text-green-600">Browser wallet connected</p>
+                    </div>
+                    <ExternalLink className="w-4 h-4 text-green-600 flex-shrink-0" />
+                  </div>
+                ) : extensionStatus === 'offline' ? (
+                  <div className="flex items-center gap-3 px-3 py-2.5 rounded-[4px] bg-red-50 border border-red-200">
+                    <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-red-700">Extension Offline</p>
+                      <p className="text-[10px] text-red-600">Please enable extension</p>
+                    </div>
+                  </div>
+                ) : (
+                  <a
+                    href="https://chrome.google.com/webstore"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-[4px] bg-white border-2 border-[#0019ff] hover:bg-blue-50 transition-all group"
+                  >
+                    <svg
+                      className="w-4 h-4 text-[#0019ff] flex-shrink-0"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <rect x="3" y="3" width="7" height="7" rx="1" />
+                      <rect x="14" y="3" width="7" height="7" rx="1" />
+                      <rect x="14" y="14" width="7" height="7" rx="1" />
+                      <rect x="3" y="14" width="7" height="7" rx="1" />
+                    </svg>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-[#0019ff]">Get Wallet in Browser</p>
+                      <p className="text-[10px] text-blue-600">Install extension</p>
+                    </div>
+                    <ExternalLink className="w-4 h-4 text-[#0019ff] opacity-60 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                  </a>
+                )}
+
+                {/* Account Selector with Dropdown */}
+                {accounts.length > 0 && (
+                  <Menu as="div" className="relative mb-3">
+                    <MenuButton className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[4px] bg-gray-50 hover:bg-gray-100 border border-gray-200 hover:border-gray-300 transition-all group">
+                      <div className="relative flex-shrink-0">
+                        <img
+                          src={address ? blockies(address) : '/default-avatar.png'}
+                          alt="Account"
+                          className="w-10 h-10 rounded-full"
+                        />
+                        <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                      </div>
+                      <div className="flex-1 min-w-0 text-left">
+                        <p className="text-xs text-gray-500 font-medium">Connected</p>
+                        <p className="text-sm font-bold text-black group-hover:text-[#0019ff] transition-colors truncate">
+                          {getActiveAccount()?.name || `Account ${activeAccountIndex + 1}`}
+                        </p>
+                      </div>
+                      <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-[#0019ff] transition-colors flex-shrink-0" />
+                    </MenuButton>
+
+                    <MenuItems className="absolute left-0 right-0 bottom-full mb-2 z-10 origin-bottom rounded-[4px] bg-white shadow-lg ring-1 ring-black/5 focus:outline-none max-h-80 overflow-auto">
+                      <div className="py-1">
+                        {accounts.map((account) => (
+                          <MenuItem key={account.index}>
+                            <div className={classNames(
+                              account.index === activeAccountIndex
+                                ? 'bg-blue-50 text-gray-900'
+                                : 'text-gray-700',
+                              'group flex items-center gap-3 px-4 py-3 text-sm w-full hover:bg-gray-50 transition-colors'
+                            )}>
+                              <button
+                                onClick={() => switchAccount(account.index)}
+                                className="flex items-center gap-3 flex-1 min-w-0"
+                              >
+                                <img
+                                  src={blockies(account.address)}
+                                  alt={account.name}
+                                  className="w-8 h-8 rounded-full flex-shrink-0"
+                                />
+                                <div className="text-left overflow-hidden flex-1">
+                                  <p className="font-semibold truncate">{account.name}</p>
+                                  <p className="text-xs text-gray-500 truncate font-mono">
+                                    {account.address.slice(0, 6)}...{account.address.slice(-4)}
+                                  </p>
+                                </div>
+                              </button>
+                              <div className="flex items-center gap-1.5 flex-shrink-0">
+                                {account.index === activeAccountIndex && (
+                                  <div className="w-2 h-2 bg-[#0019ff] rounded-full"></div>
+                                )}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setRenameAccountIndex(account.index);
+                                    setNewAccountName(account.name);
+                                    setShowRenameAccount(true);
+                                  }}
+                                  className="p-1.5 hover:bg-gray-200 rounded-[4px] transition-colors"
+                                  title="Rename account"
+                                >
+                                  <Edit className="w-3.5 h-3.5 text-gray-500 hover:text-gray-700" />
+                                </button>
+                              </div>
+                            </div>
+                          </MenuItem>
+                        ))}
+                        <div className="border-t border-gray-100 my-1"></div>
+                        <MenuItem>
+                          <button
+                            onClick={() => createAccount()}
+                            className="group flex items-center gap-3 px-4 py-3 text-sm w-full hover:bg-blue-50 transition-colors text-[#0019ff] font-semibold"
+                          >
+                            <div className="w-8 h-8 rounded-full bg-[#0019ff] flex items-center justify-center flex-shrink-0">
+                              <span className="text-white text-lg font-bold">+</span>
+                            </div>
+                            <span>Create New Account</span>
+                          </button>
+                        </MenuItem>
+                      </div>
+                    </MenuItems>
+                  </Menu>
+                )}
+
+                {/* Disconnect Button */}
+                <button
+                  onClick={() => {
+                    handleLogout(router, disconnect);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-[4px] bg-white border border-gray-300 hover:border-red-500 hover:bg-red-50 text-gray-700 hover:text-red-600 font-semibold text-sm transition-all"
                 >
-                  <Settings
-                    aria-hidden="true"
-                    className="size-5 shrink-0 text-gray-400 group-hover:text-black group-hover:rotate-90 transition-all duration-300"
-                  />
-                  Settings
-                </a>
+                  <LogOut className="w-4 h-4" />
+                  Disconnect
+                </button>
               </li>
             </ul>
           </nav>
         </div>
       </div>
 
-      <div className="lg:pl-72">
+      <div className="pt-9 lg:pl-72">
         <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white/95 backdrop-blur-xl px-4 shadow-md sm:gap-x-6 sm:px-6 lg:px-8">
           <button
             type="button"
@@ -2868,85 +3013,7 @@ export default function DashboardPage() {
           <div className="flex flex-1 items-center justify-end gap-x-4 lg:gap-x-6">
             {/* Quick Actions & Profile */}
             <div className="flex items-center gap-3">
-              {/* Download Extension Button */}
-              <a
-                href="https://chrome.google.com/webstore"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-gray-50 border-2 border-[#0019ff] text-[#0019ff] font-bold text-xs transition-all group"
-                style={{ borderRadius: '4px' }}
-              >
-                <svg
-                  className="w-4 h-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <rect x="3" y="3" width="7" height="7" rx="1" />
-                  <rect x="14" y="3" width="7" height="7" rx="1" />
-                  <rect x="14" y="14" width="7" height="7" rx="1" />
-                  <rect x="3" y="14" width="7" height="7" rx="1" />
-                </svg>
-                <span>Get Wallet in Browser</span>
-                <ExternalLink className="w-3 h-3 opacity-60 group-hover:opacity-100 transition-opacity" />
-              </a>
 
-              {/* Separator */}
-              <div aria-hidden="true" className="hidden lg:block h-6 w-px bg-gray-200" />
-
-              {/* Network & Connection Status */}
-              <Menu as="div" className="relative hidden lg:block">
-                <MenuButton className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-colors" style={{ borderRadius: '4px' }}>
-                  <div className={`w-2 h-2 rounded-full ${networkStatus === 'connected' ? 'bg-green-500' : 'bg-red-500'}`} />
-                  <span className="text-xs font-semibold text-gray-700">{currentNetwork.name}</span>
-                  <span className="text-xs text-gray-500">#{blockHeight.toLocaleString()}</span>
-                  <ChevronDown className="w-3 h-3 text-gray-500" />
-                </MenuButton>
-                <MenuItems className="absolute left-0 z-50 mt-2 w-48 origin-top-left bg-white shadow-lg ring-1 ring-black/5 focus:outline-none" style={{ borderRadius: '4px' }}>
-                  <div className="py-1">
-                    <MenuItem>
-                      {({ active }) => (
-                        <button
-                          onClick={() => switchNetwork(NETWORKS.DEVNET)}
-                          className={`${
-                            active ? 'bg-gray-100' : ''
-                          } ${
-                            currentNetwork.id === 'devnet' ? 'bg-blue-50 font-semibold' : ''
-                          } group flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-900`}
-                        >
-                          <div className={`w-2 h-2 rounded-full ${currentNetwork.id === 'devnet' ? 'bg-blue-600' : 'bg-gray-300'}`} />
-                          Devnet
-                        </button>
-                      )}
-                    </MenuItem>
-                    <MenuItem disabled>
-                      {({ active }) => (
-                        <button
-                          disabled
-                          className="group flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-400 cursor-not-allowed"
-                        >
-                          <div className="w-2 h-2 rounded-full bg-gray-300" />
-                          Testnet
-                          <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 bg-gray-200 text-gray-500 rounded" style={{ borderRadius: '4px' }}>Q1 2026</span>
-                        </button>
-                      )}
-                    </MenuItem>
-                    <MenuItem disabled>
-                      {({ active }) => (
-                        <button
-                          disabled
-                          className="group flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-400 cursor-not-allowed"
-                        >
-                          <div className="w-2 h-2 rounded-full bg-gray-300" />
-                          Mainnet
-                          <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 bg-gray-200 text-gray-500 rounded" style={{ borderRadius: '4px' }}>Q3 2026</span>
-                        </button>
-                      )}
-                    </MenuItem>
-                  </div>
-                </MenuItems>
-              </Menu>
 
               {/* RAIN Price Ticker */}
               <div className="hidden xl:flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200" style={{ borderRadius: '4px' }}>
@@ -2981,111 +3048,6 @@ export default function DashboardPage() {
                   </span>
                 </div>
               )}
-
-              {/* Separator */}
-              <div aria-hidden="true" className="hidden lg:block h-6 w-px bg-gray-200" />
-
-              {/* Account Switcher Dropdown */}
-              {accounts.length > 0 && (
-                <Menu as="div" className="relative">
-                  <MenuButton className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors">
-                    <img
-                      src={address ? blockies(address) : ""}
-                      alt="Profile"
-                      className="w-10 h-10 rounded-full ring-2 ring-gray-200"
-                    />
-                    <div className="hidden lg:block text-left">
-                      <p className="text-xs text-gray-500">Connected</p>
-                      <p className="text-sm font-semibold text-gray-900">
-                        {getActiveAccount()?.name || 'Account'}
-                      </p>
-                    </div>
-                    <ChevronDown className="hidden lg:block w-4 h-4 text-gray-400" />
-                  </MenuButton>
-
-                  <MenuItems
-                    transition
-                    className="absolute right-0 z-10 mt-2 w-80 origin-top-right rounded-lg bg-white py-2 shadow-xl ring-1 ring-gray-900/5 transition data-closed:scale-95 data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in max-h-96 overflow-auto"
-                  >
-                    {/* Account List */}
-                    <div className="px-2 py-1">
-                      <p className="text-xs font-semibold text-gray-500 px-3 py-2">Your Accounts</p>
-                      {accounts.map((account) => (
-                        <MenuItem key={account.index}>
-                          <div className={classNames(
-                            account.index === activeAccountIndex
-                              ? 'bg-blue-50'
-                              : 'hover:bg-gray-50',
-                            'group flex items-center gap-3 px-3 py-2 rounded-lg transition-colors'
-                          )}>
-                            <button
-                              onClick={() => switchAccount(account.index)}
-                              className="flex items-center gap-3 flex-1 min-w-0"
-                            >
-                              <img
-                                src={blockies(account.address)}
-                                alt={account.name}
-                                className="w-10 h-10 rounded-full flex-shrink-0"
-                              />
-                              <div className="text-left overflow-hidden">
-                                <p className="font-semibold text-gray-900 truncate">{account.name}</p>
-                                <p className="text-xs text-gray-500 truncate font-mono">
-                                  {account.address.slice(0, 6)}...{account.address.slice(-4)}
-                                </p>
-                              </div>
-                            </button>
-                            <div className="flex items-center gap-1">
-                              {account.index === activeAccountIndex && (
-                                <Check className="w-5 h-5 text-[#0019ff]" />
-                              )}
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setRenameAccountIndex(account.index);
-                                  setNewAccountName(account.name);
-                                  setShowRenameAccount(true);
-                                }}
-                                className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
-                                title="Rename account"
-                              >
-                                <Edit className="w-4 h-4 text-gray-600" />
-                              </button>
-                            </div>
-                          </div>
-                        </MenuItem>
-                      ))}
-                    </div>
-
-                    {/* Divider */}
-                    <div className="border-t border-gray-200 my-2"></div>
-
-                    {/* Create New Account */}
-                    <MenuItem>
-                      <button
-                        onClick={() => createAccount()}
-                        className="flex items-center gap-3 px-5 py-3 text-sm w-full hover:bg-gray-50 transition-colors text-[#0019ff] font-semibold"
-                      >
-                        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
-                          <Plus className="w-5 h-5 text-[#0019ff]" />
-                        </div>
-                        <span>Create New Account</span>
-                      </button>
-                    </MenuItem>
-                  </MenuItems>
-                </Menu>
-              )}
-
-              {/* Separator */}
-              <div aria-hidden="true" className="hidden lg:block h-6 w-px bg-gray-200" />
-
-              {/* Disconnect Button */}
-              <button
-                onClick={handleDisconnect}
-                className="hidden lg:flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg font-semibold text-sm transition-all border border-transparent hover:border-red-200"
-              >
-                <LogOut className="w-4 h-4" />
-                Disconnect
-              </button>
 
               {/* Mobile Menu Button */}
               <Menu as="div" className="relative lg:hidden">
@@ -5358,30 +5320,30 @@ export default function DashboardPage() {
 
     {/* Logout Confirmation Modal */}
     {showLogoutConfirm && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
-        <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 animate-in fade-in zoom-in duration-300">
-          <div className="flex items-center justify-center w-16 h-16 mx-auto mb-6 rounded-full bg-yellow-100">
-            <LogOut className="w-8 h-8 text-yellow-600" />
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div className="relative bg-white rounded-[4px] shadow-xl max-w-md w-full p-8">
+          <div className="flex items-center justify-center w-16 h-16 mx-auto mb-6 rounded-[4px] bg-gray-100">
+            <LogOut className="w-8 h-8 text-black" />
           </div>
 
-          <h2 className="text-2xl font-bold text-center text-gray-900 mb-3">
+          <h2 className="text-2xl font-bold text-center text-black mb-3">
             Confirm Logout
           </h2>
 
-          <p className="text-center text-gray-600 mb-8">
+          <p className="text-center text-gray-600 mb-8 text-sm">
             Are you sure you want to logout? Make sure you have saved your seed phrase.
           </p>
 
           <div className="flex gap-3">
             <button
               onClick={() => setShowLogoutConfirm(false)}
-              className="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all"
+              className="flex-1 px-6 py-3 bg-white border-2 border-gray-300 hover:border-black hover:bg-gray-50 text-black font-semibold rounded-[4px] transition-all"
             >
               Cancel
             </button>
             <button
               onClick={confirmLogout}
-              className="flex-1 px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition-all"
+              className="flex-1 px-6 py-3 bg-[#0019ff] hover:bg-blue-700 text-white font-semibold rounded-[4px] transition-all"
             >
               Logout
             </button>
