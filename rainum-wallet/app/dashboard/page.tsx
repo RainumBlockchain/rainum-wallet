@@ -138,7 +138,8 @@ export default function DashboardPage() {
     switchAccount,
     getActiveAccount,
     renameAccount,
-    discoverAccounts
+    discoverAccounts,
+    getAccountType
   } = useWalletStore();
   const {
     addAddress,
@@ -3283,7 +3284,7 @@ export default function DashboardPage() {
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-xs text-gray-500">Account Type</span>
-                          <span className="text-xs font-semibold text-black">HD Wallet</span>
+                          <span className="text-xs font-semibold text-black">{getAccountType()}</span>
                         </div>
                       </div>
                     </div>

@@ -36,6 +36,7 @@ interface WalletState {
   getActiveAccount: () => WalletAccount | null;
   getPrivateKey: (accountIndex: number) => Uint8Array | null;
   discoverAccounts: () => Promise<void>;
+  getAccountType: () => 'HD Wallet' | 'Imported Account' | 'Watch-Only' | 'Unknown';
 }
 
 export const useWalletStore = create<WalletState>()(
@@ -323,6 +324,30 @@ export const useWalletStore = create<WalletState>()(
             address: discoveredAccounts[0].address
           });
         }
+      },
+
+      /**
+       * Get wallet account type based on how it was created
+       */
+      getAccountType: () => {
+        const { mnemonic, encryptedMnemonic, accounts, address } = get();
+
+        // If has mnemonic (encrypted or in memory) = HD Wallet
+        if (mnemonic || encryptedMnemonic) {
+          return 'HD Wallet';
+        }
+
+        // If has address but no mnemonic = Imported Account (private key)
+        if (address && !mnemonic && !encryptedMnemonic) {
+          // Could be imported or watch-only
+          // For now, assume imported if connected
+          return 'Imported Account';
+        }
+
+        // Watch-only would be addresses without private keys (future feature)
+        // Hardware wallet would be detected via different mechanism (future feature)
+
+        return 'Unknown';
       },
     }),
     {
