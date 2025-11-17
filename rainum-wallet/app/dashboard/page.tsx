@@ -158,7 +158,14 @@ export default function DashboardPage() {
   // Network Settings Modal state
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false);
   const [selectedNetwork, setSelectedNetwork] = useState<Network>(currentNetwork);
-  const [tempDefaultNetwork, setTempDefaultNetwork] = useState<Network | null>(defaultNetwork);
+  const [tempDefaultNetwork, setTempDefaultNetwork] = useState<Network | null>(null);
+
+  // Sync tempDefaultNetwork with defaultNetwork from store
+  useEffect(() => {
+    if (defaultNetwork) {
+      setTempDefaultNetwork(defaultNetwork);
+    }
+  }, [defaultNetwork]);
 
   // Get live blockchain status (block height, network, connection)
   const blockchainStatus = useBlockchainStatus(10000); // Update every 10 seconds
@@ -1421,15 +1428,15 @@ export default function DashboardPage() {
         <div className="fixed inset-0 z-10 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4">
             <DialogPanel className="relative transform overflow-hidden rounded-[4px] bg-white px-6 py-8 shadow-xl transition-all w-full max-w-md">
-              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 rounded-full bg-blue-100">
-                <AlertTriangle className="w-6 h-6 text-blue-600" />
+              <div className="flex items-center justify-center w-10 h-10 mx-auto mb-3 rounded-[4px] bg-[#0019ff]">
+                <AlertTriangle className="w-5 h-5 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-center text-gray-900 mb-2">Confirm Transaction</h3>
-              <p className="text-sm text-gray-600 text-center mb-6">
-                Please verify the recipient address before continuing. Transactions cannot be reversed.
+              <h3 className="text-lg font-bold text-center text-black mb-1.5">Confirm Transaction</h3>
+              <p className="text-xs text-gray-600 text-center mb-4">
+                Verify recipient address. Transactions cannot be reversed.
               </p>
 
-              <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-[4px] p-4 mb-6 space-y-3">
+              <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-[4px] p-3 mb-4 space-y-2.5">
                 <div>
                   <p className="text-xs text-gray-500 font-semibold mb-1">Recipient</p>
                   <div className="flex items-center gap-2">
@@ -1439,51 +1446,51 @@ export default function DashboardPage() {
                     {addressExists === false && <AlertTriangle className="w-4 h-4 text-gray-600 flex-shrink-0" />}
                   </div>
                   {addressExists === true && !addressIsNew && (
-                    <p className="text-xs text-blue-600 mt-1 font-medium">✓ Verified address with activity</p>
+                    <p className="text-[10px] text-blue-600 mt-1 font-bold uppercase tracking-wide">Verified address with activity</p>
                   )}
                   {addressExists === true && addressIsNew && (
-                    <p className="text-xs text-blue-500 mt-1 font-medium">ℹ️ New/unused address</p>
+                    <p className="text-[10px] text-blue-500 mt-1 font-bold uppercase tracking-wide">New/unused address</p>
                   )}
                   {addressExists === false && (
-                    <p className="text-xs text-gray-600 mt-1 font-medium">⚠️ Invalid address</p>
+                    <p className="text-[10px] text-gray-600 mt-1 font-bold uppercase tracking-wide">Invalid address</p>
                   )}
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <p className="text-xs text-gray-500 font-semibold mb-1">Amount</p>
-                    <p className="text-sm font-semibold text-gray-900">{amount} RAIN</p>
+                    <p className="text-[10px] text-gray-500 font-bold mb-0.5 uppercase tracking-wide">Amount</p>
+                    <p className="text-xs font-bold text-black font-mono">{amount} RAIN</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 font-semibold mb-1">Network</p>
-                    <p className="text-sm text-gray-900">Rainum</p>
+                    <p className="text-[10px] text-gray-500 font-bold mb-0.5 uppercase tracking-wide">Network</p>
+                    <p className="text-xs font-bold text-black">Rainum</p>
                   </div>
                 </div>
               </div>
 
               {addressExists === true && !addressIsNew ? (
-                <div className="bg-gradient-to-br from-blue-50 to-white border border-blue-200 rounded-[4px] p-3 mb-6">
+                <div className="border-l-4 border-l-[#0019ff] bg-gradient-to-br from-blue-50 to-white border-r border-t border-b border-blue-200 rounded-[4px] p-2.5 mb-4">
                   <div className="flex gap-2">
-                    <Check className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                    <p className="text-xs text-blue-700 font-medium">
-                      Address verified with activity on Rainum network. Please confirm the transaction details.
+                    <Check className="w-3.5 h-3.5 text-[#0019ff] mt-0.5 flex-shrink-0" />
+                    <p className="text-[11px] text-blue-900 font-semibold leading-snug">
+                      Address verified with activity on Rainum network. Confirm transaction details.
                     </p>
                   </div>
                 </div>
               ) : addressExists === true && addressIsNew ? (
-                <div className="bg-gradient-to-br from-blue-50/50 to-white border border-blue-200 rounded-[4px] p-3 mb-6">
+                <div className="border-l-4 border-l-blue-400 bg-gradient-to-br from-blue-50/50 to-white border-r border-t border-b border-blue-200 rounded-[4px] p-2.5 mb-4">
                   <div className="flex gap-2">
-                    <Info className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                    <p className="text-xs text-blue-600 font-medium">
-                      ℹ️ INFO: This address is new/unused but has valid EVM format. You can send to it safely. Transactions cannot be reversed, so please verify the address is correct.
+                    <Info className="w-3.5 h-3.5 text-blue-500 mt-0.5 flex-shrink-0" />
+                    <p className="text-[11px] text-blue-700 font-semibold leading-snug">
+                      INFO: New/unused address with valid EVM format. Can send safely. Verify address is correct.
                     </p>
                   </div>
                 </div>
               ) : (
-                <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-300 rounded-[4px] p-3 mb-6">
+                <div className="border-l-4 border-l-gray-400 bg-gradient-to-br from-gray-50 to-white border-r border-t border-b border-gray-300 rounded-[4px] p-2.5 mb-4">
                   <div className="flex gap-2">
-                    <AlertTriangle className="w-4 h-4 text-gray-600 mt-0.5 flex-shrink-0" />
-                    <p className="text-xs text-gray-700 font-medium">
-                      Make sure the recipient address is correct. Transactions cannot be reversed.
+                    <AlertTriangle className="w-3.5 h-3.5 text-gray-600 mt-0.5 flex-shrink-0" />
+                    <p className="text-[11px] text-gray-800 font-semibold leading-snug">
+                      Verify recipient address is correct. Transactions cannot be reversed.
                     </p>
                   </div>
                 </div>
@@ -1514,28 +1521,28 @@ export default function DashboardPage() {
                 }
 
                 return (
-                  <div className="bg-gradient-to-r from-blue-50 to-blue-100/50 border border-blue-200 rounded-[4px] p-4 mb-6">
-                    <div className="flex items-start gap-3">
+                  <div className="border-l-4 border-l-[#0019ff] bg-gradient-to-r from-blue-50 to-blue-100/50 border-r border-t border-b border-blue-200 rounded-[4px] p-3 mb-4">
+                    <div className="flex items-start gap-2.5">
                       <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm"
+                        className="w-8 h-8 rounded-[4px] flex items-center justify-center font-bold text-xs"
                         style={{ backgroundColor: tierColor, color: '#000' }}
                       >
                         T{tier}
                       </div>
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Activity className="w-4 h-4 text-blue-600" />
-                          <p className="text-sm font-bold text-gray-900">Transaction Tier: {tierName}</p>
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <Activity className="w-3.5 h-3.5 text-[#0019ff]" />
+                          <p className="text-xs font-bold text-black">Transaction Tier: {tierName}</p>
                         </div>
-                        <div className="space-y-1">
-                          <p className="text-xs text-gray-700">
-                            <span className="font-semibold">Routing:</span> {targetValidators}
+                        <div className="space-y-0.5">
+                          <p className="text-[10px] text-gray-700 leading-tight">
+                            <span className="font-bold">Routing:</span> {targetValidators}
                           </p>
-                          <p className="text-xs text-gray-700">
-                            <span className="font-semibold">Est. Finality:</span> {estimatedFinality}
+                          <p className="text-[10px] text-gray-700 leading-tight">
+                            <span className="font-bold">Est. Finality:</span> {estimatedFinality}
                           </p>
-                          <p className="text-xs text-gray-500 mt-2">
-                            Your tier is determined by your wallet balance. Higher tiers get priority routing and faster finality.
+                          <p className="text-[10px] text-gray-500 mt-1 leading-tight">
+                            Tier based on balance. Higher tiers = priority routing & faster finality.
                           </p>
                         </div>
                       </div>
@@ -1544,16 +1551,16 @@ export default function DashboardPage() {
                 );
               })()}
 
-              <div className="flex gap-3">
+              <div className="flex gap-2.5">
                 <button
                   onClick={() => setShowSecurityDialog(false)}
-                  className="flex-1 px-4 py-3 rounded-[4px] border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-3 py-2.5 rounded-[4px] border border-gray-300 text-gray-700 text-sm font-bold hover:bg-gray-50 hover:border-gray-400 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSecurityConfirm}
-                  className="flex-1 px-4 py-3 rounded-[4px] bg-[#0019ff] text-white font-semibold hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
+                  className="flex-1 px-3 py-2.5 rounded-[4px] bg-[#0019ff] text-white text-sm font-bold hover:bg-blue-700 transition-all shadow-sm hover:shadow-md"
                 >
                   Continue
                 </button>
@@ -1708,62 +1715,62 @@ export default function DashboardPage() {
         <DialogBackdrop className="fixed inset-0 bg-gray-900/80 transition-opacity" />
         <div className="fixed inset-0 z-10 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4">
-            <DialogPanel className="relative transform overflow-hidden rounded-[4px] bg-white px-6 py-8 shadow-xl transition-all w-full max-w-md">
-              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 rounded-full bg-blue-100">
-                <Check className="w-6 h-6 text-[#0019ff]" />
+            <DialogPanel className="relative transform overflow-hidden rounded-[4px] bg-white px-5 py-6 shadow-xl transition-all w-full max-w-md">
+              <div className="flex items-center justify-center w-10 h-10 mx-auto mb-3 rounded-[4px] bg-[#0019ff]">
+                <Check className="w-5 h-5 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-center text-gray-900 mb-2">Transaction Summary</h3>
-              <p className="text-sm text-gray-600 text-center mb-6">Review your transaction details before sending</p>
+              <h3 className="text-lg font-bold text-center text-black mb-1.5">Transaction Summary</h3>
+              <p className="text-xs text-gray-600 text-center mb-4">Review transaction details before sending</p>
 
-              <div className="space-y-4 mb-6">
-                <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-[4px] p-4">
-                  <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-200">
-                    <span className="text-sm text-gray-600">From</span>
-                    <span className="text-sm font-mono text-gray-900">{address?.slice(0, 8)}...{address?.slice(-6)}</span>
+              <div className="space-y-3 mb-4">
+                <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-[4px] p-3">
+                  <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-200">
+                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wide">From</span>
+                    <span className="text-xs font-mono text-black">{address?.slice(0, 8)}...{address?.slice(-6)}</span>
                   </div>
-                  <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-200">
-                    <span className="text-sm text-gray-600">To</span>
-                    <span className="text-sm font-mono text-gray-900">{recipient.slice(0, 8)}...{recipient.slice(-6)}</span>
+                  <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-200">
+                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wide">To</span>
+                    <span className="text-xs font-mono text-black">{recipient.slice(0, 8)}...{recipient.slice(-6)}</span>
                   </div>
-                  <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-200">
-                    <span className="text-sm text-gray-600">Amount</span>
-                    <span className="text-sm font-bold font-mono text-gray-900">{amount} RAIN</span>
+                  <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-200">
+                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wide">Amount</span>
+                    <span className="text-xs font-bold font-mono text-black">{amount} RAIN</span>
                   </div>
-                  <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-200">
-                    <span className="text-sm text-gray-600">Priority</span>
-                    <span className="text-sm font-semibold text-gray-900 capitalize">{priority}</span>
+                  <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-200">
+                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wide">Priority</span>
+                    <span className="text-xs font-bold text-black capitalize">{priority}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Network Fee</span>
-                    <span className="text-sm font-mono text-gray-900">
+                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wide">Network Fee</span>
+                    <span className="text-xs font-mono text-black">
                       {priorityOptions.find((p) => p.id === priority)?.fee || "0.001"} RAIN
                     </span>
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-blue-50 to-white border-2 border-[#0019ff] rounded-[4px] p-4">
+                <div className="border-l-4 border-l-[#0019ff] bg-gradient-to-br from-blue-50 to-white border-r border-t border-b border-[#0019ff] rounded-[4px] p-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-base font-semibold text-gray-900">Total Cost</span>
-                    <span className="text-lg font-bold font-mono text-[#0019ff]">
+                    <span className="text-sm font-bold text-black uppercase tracking-wide">Total Cost</span>
+                    <span className="text-base font-bold font-mono text-[#0019ff]">
                       {(parseFloat(amount.replace(/,/g, '')) + parseFloat(priorityOptions.find((p) => p.id === priority)?.fee || "0.001")).toFixed(4)} RAIN
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-2.5">
                 <button
                   onClick={() => setShowSummaryDialog(false)}
-                  className="flex-1 px-4 py-3 rounded-[4px] border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-3 py-2.5 rounded-[4px] border border-gray-300 text-gray-700 text-sm font-bold hover:bg-gray-50 hover:border-gray-400 transition-colors"
                 >
                   Back
                 </button>
                 <button
                   onClick={handleFinalSend}
-                  className="flex-1 px-4 py-3 rounded-[4px] bg-black text-white font-semibold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+                  className="flex-1 px-3 py-2.5 rounded-[4px] bg-black text-white text-sm font-bold hover:bg-gray-800 transition-all flex items-center justify-center gap-1.5 shadow-sm hover:shadow-md"
                 >
                   <span>Send Now</span>
-                  <ArrowRightLeft className="w-4 h-4" />
+                  <ArrowRightLeft className="w-3.5 h-3.5" />
                 </button>
               </div>
             </DialogPanel>
@@ -1776,56 +1783,56 @@ export default function DashboardPage() {
         <DialogBackdrop className="fixed inset-0 bg-gray-900/80 transition-opacity" />
         <div className="fixed inset-0 z-10 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4">
-            <DialogPanel className="relative transform overflow-hidden rounded-[4px] bg-white px-6 py-8 shadow-xl transition-all w-full max-w-md">
-              <div className="flex items-center justify-center w-14 h-14 mx-auto mb-4 rounded-full bg-blue-100">
-                <AlertTriangle className="w-8 h-8 text-blue-600" />
+            <DialogPanel className="relative transform overflow-hidden rounded-[4px] bg-white px-5 py-6 shadow-xl transition-all w-full max-w-md">
+              <div className="flex items-center justify-center w-10 h-10 mx-auto mb-3 rounded-[4px] bg-[#0019ff]">
+                <AlertTriangle className="w-5 h-5 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-center text-gray-900 mb-2">Large Transaction Amount</h3>
-              <p className="text-sm text-gray-600 text-center mb-6">
-                You are about to send a large amount. Please confirm this is intentional.
+              <h3 className="text-lg font-bold text-center text-black mb-1.5">Large Transaction Amount</h3>
+              <p className="text-xs text-gray-600 text-center mb-4">
+                Sending large amount. Confirm this is intentional.
               </p>
 
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 border-2 border-blue-300 rounded-[4px] p-5 mb-6">
+              <div className="border-l-4 border-l-[#0019ff] bg-gradient-to-br from-blue-50 to-blue-100/50 border-r border-t border-b border-blue-300 rounded-[4px] p-4 mb-4">
                 <div className="text-center">
-                  <p className="text-xs text-blue-700 font-semibold mb-2 uppercase tracking-wide">Transaction Amount</p>
-                  <p className="text-3xl font-bold text-black font-mono">
+                  <p className="text-[10px] text-blue-700 font-bold mb-1.5 uppercase tracking-wider">Transaction Amount</p>
+                  <p className="text-2xl font-bold text-black font-mono">
                     {amount} RAIN
                   </p>
-                  <p className="text-sm text-blue-600 mt-3">
+                  <p className="text-xs text-blue-600 mt-2">
                     ≈ {parseFloat(amount.replace(/,/g, '')).toLocaleString('en-US')} RAIN
                   </p>
                 </div>
               </div>
 
-              <div className="bg-gradient-to-br from-blue-50/50 to-white border border-blue-200 rounded-[4px] p-4 mb-6">
-                <div className="flex gap-3">
-                  <AlertTriangle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="border-l-4 border-l-blue-400 bg-gradient-to-br from-blue-50/50 to-white border-r border-t border-b border-blue-200 rounded-[4px] p-2.5 mb-4">
+                <div className="flex gap-2">
+                  <AlertTriangle className="w-3.5 h-3.5 text-[#0019ff] flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-semibold text-gray-900 mb-1">Security Notice</p>
-                    <p className="text-xs text-gray-700">
-                      This transaction exceeds 100,000 RAIN. Please verify the recipient address is correct. Transactions cannot be reversed.
+                    <p className="text-xs font-bold text-black mb-0.5 uppercase tracking-wide">Security Notice</p>
+                    <p className="text-[11px] text-gray-700 leading-snug">
+                      Transaction exceeds 100,000 RAIN. Verify recipient address. Cannot be reversed.
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-gray-50 border border-gray-200 rounded-[4px] p-4 mb-6">
+              <div className="bg-gray-50 border border-gray-200 rounded-[4px] p-2.5 mb-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Recipient</span>
-                  <span className="text-sm font-mono text-gray-900">{recipient.slice(0, 10)}...{recipient.slice(-8)}</span>
+                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wide">Recipient</span>
+                  <span className="text-xs font-mono text-black">{recipient.slice(0, 10)}...{recipient.slice(-8)}</span>
                 </div>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-2.5">
                 <button
                   onClick={() => setShowHighAmountDialog(false)}
-                  className="flex-1 px-4 py-3 rounded-[4px] border-2 border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-3 py-2.5 rounded-[4px] border border-gray-300 text-gray-700 text-sm font-bold hover:bg-gray-50 hover:border-gray-400 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleHighAmountConfirm}
-                  className="flex-1 px-4 py-3 rounded-[4px] bg-black text-white font-semibold hover:bg-gray-800 transition-colors shadow-md hover:shadow-lg"
+                  className="flex-1 px-3 py-2.5 rounded-[4px] bg-black text-white text-sm font-bold hover:bg-gray-800 transition-all shadow-sm hover:shadow-md"
                 >
                   Confirm & Continue
                 </button>
@@ -3370,57 +3377,61 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Transaction History */}
-                <div className="bg-white border border-gray-200 rounded-[4px] p-8 shadow-sm">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-black tracking-tight">Transaction History</h2>
-                    <div className="flex items-center gap-3">
+                <div className="bg-white border border-gray-200 rounded-[4px] shadow-lg">
+                  <div className="bg-gradient-to-r from-gray-50 to-white px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-xl font-bold text-black tracking-tight">Transaction History</h2>
+                      <p className="text-xs text-gray-500 mt-0.5">View and manage your transactions</p>
+                    </div>
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={exportToCSV}
                         disabled={transactions.length === 0}
-                        className="text-sm text-[#0019ff] hover:text-blue-700 font-semibold flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="px-3 py-2 bg-green-600 text-white rounded-[4px] text-xs font-semibold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-1.5 shadow-sm"
                       >
-                        <Download className="w-4 h-4" />
+                        <Download className="w-3.5 h-3.5" />
                         Export CSV
                       </button>
                       <button
                         onClick={fetchTransactions}
                         disabled={loadingTransactions}
-                        className="text-sm text-[#0019ff] hover:text-blue-700 font-semibold flex items-center gap-1 disabled:opacity-50 transition-colors"
+                        className="px-3 py-2 bg-[#0019ff] text-white rounded-[4px] text-xs font-semibold hover:bg-blue-700 disabled:opacity-50 transition-all duration-200 flex items-center gap-1.5 shadow-sm"
                       >
-                        <RefreshCw className={classNames("w-4 h-4", loadingTransactions ? "animate-spin" : "")} />
+                        <RefreshCw className={classNames("w-3.5 h-3.5", loadingTransactions ? "animate-spin" : "")} />
                         Refresh
                       </button>
                     </div>
                   </div>
+                  <div className="p-5">
 
                   {/* Search and Filter Controls */}
                   {transactions.length > 0 && (
-                    <div className="mb-6 space-y-4">
+                    <div className="mb-4 space-y-3">
                       {/* Search */}
                       <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input
                           type="text"
-                          placeholder="Search by hash or address..."
+                          placeholder="Search transactions..."
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
-                          className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-[4px] focus:ring-2 focus:ring-[#0019ff] focus:border-[#0019ff] outline-none transition-all text-sm text-gray-900 font-mono"
+                          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-[4px] focus:ring-2 focus:ring-[#0019ff] focus:border-[#0019ff] focus:border-2 outline-none transition-all text-xs text-gray-900 font-mono bg-white shadow-sm"
                         />
                       </div>
 
                       {/* Filter and Sort */}
-                      <div className="flex flex-wrap gap-3">
+                      <div className="flex flex-wrap gap-2 items-center">
                         {/* Status Filter */}
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-gray-600">Status:</span>
-                          <div className="flex gap-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Status:</span>
+                          <div className="flex gap-1">
                             <button
                               onClick={() => setFilterStatus("all")}
                               className={classNames(
-                                "px-3 py-1.5 text-xs font-semibold rounded-[4px] transition-all",
+                                "px-2.5 py-1 text-[11px] font-bold rounded-[4px] transition-all duration-200 shadow-sm",
                                 filterStatus === "all"
-                                  ? "bg-[#0019ff] text-white"
-                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                  ? "bg-[#0019ff] text-white shadow-md scale-105"
+                                  : "bg-white border border-gray-300 text-gray-700 hover:border-[#0019ff] hover:text-[#0019ff]"
                               )}
                             >
                               All
@@ -3428,10 +3439,10 @@ export default function DashboardPage() {
                             <button
                               onClick={() => setFilterStatus("confirmed")}
                               className={classNames(
-                                "px-3 py-1.5 text-xs font-semibold rounded-[4px] transition-all",
+                                "px-2.5 py-1 text-[11px] font-bold rounded-[4px] transition-all duration-200 shadow-sm",
                                 filterStatus === "confirmed"
-                                  ? "bg-[#0019ff] text-white"
-                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                  ? "bg-[#0019ff] text-white shadow-md scale-105"
+                                  : "bg-white border border-gray-300 text-gray-700 hover:border-[#0019ff] hover:text-[#0019ff]"
                               )}
                             >
                               Confirmed
@@ -3439,10 +3450,10 @@ export default function DashboardPage() {
                             <button
                               onClick={() => setFilterStatus("pending")}
                               className={classNames(
-                                "px-3 py-1.5 text-xs font-semibold rounded-[4px] transition-all",
+                                "px-2.5 py-1 text-[11px] font-bold rounded-[4px] transition-all duration-200 shadow-sm",
                                 filterStatus === "pending"
-                                  ? "bg-black text-white"
-                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                  ? "bg-black text-white shadow-md scale-105"
+                                  : "bg-white border border-gray-300 text-gray-700 hover:border-black hover:text-black"
                               )}
                             >
                               Pending
@@ -3450,17 +3461,19 @@ export default function DashboardPage() {
                           </div>
                         </div>
 
+                        <div className="w-px h-6 bg-gray-300"></div>
+
                         {/* Sort By */}
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-gray-600">Sort:</span>
-                          <div className="flex gap-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Sort:</span>
+                          <div className="flex gap-1">
                             <button
                               onClick={() => setSortBy("newest")}
                               className={classNames(
-                                "px-3 py-1.5 text-xs font-semibold rounded-[4px] transition-all",
+                                "px-2.5 py-1 text-[11px] font-bold rounded-[4px] transition-all duration-200 shadow-sm",
                                 sortBy === "newest"
-                                  ? "bg-[#0019ff] text-white"
-                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                  ? "bg-[#0019ff] text-white shadow-md scale-105"
+                                  : "bg-white border border-gray-300 text-gray-700 hover:border-[#0019ff] hover:text-[#0019ff]"
                               )}
                             >
                               Newest
@@ -3468,10 +3481,10 @@ export default function DashboardPage() {
                             <button
                               onClick={() => setSortBy("oldest")}
                               className={classNames(
-                                "px-3 py-1.5 text-xs font-semibold rounded-[4px] transition-all",
+                                "px-2.5 py-1 text-[11px] font-bold rounded-[4px] transition-all duration-200 shadow-sm",
                                 sortBy === "oldest"
-                                  ? "bg-[#0019ff] text-white"
-                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                  ? "bg-[#0019ff] text-white shadow-md scale-105"
+                                  : "bg-white border border-gray-300 text-gray-700 hover:border-[#0019ff] hover:text-[#0019ff]"
                               )}
                             >
                               Oldest
@@ -3479,10 +3492,10 @@ export default function DashboardPage() {
                             <button
                               onClick={() => setSortBy("amount")}
                               className={classNames(
-                                "px-3 py-1.5 text-xs font-semibold rounded-[4px] transition-all",
+                                "px-2.5 py-1 text-[11px] font-bold rounded-[4px] transition-all duration-200 shadow-sm",
                                 sortBy === "amount"
-                                  ? "bg-[#0019ff] text-white"
-                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                  ? "bg-[#0019ff] text-white shadow-md scale-105"
+                                  : "bg-white border border-gray-300 text-gray-700 hover:border-[#0019ff] hover:text-[#0019ff]"
                               )}
                             >
                               Amount
@@ -3528,7 +3541,7 @@ export default function DashboardPage() {
                           </div>
                         )}
 
-                        <div className="space-y-3">
+                        <div className="space-y-2">
                           {getPaginatedTransactions().map((tx, index) => {
                         const isOutgoing = tx.from?.toLowerCase() === address?.toLowerCase();
                         return (
@@ -3538,22 +3551,25 @@ export default function DashboardPage() {
                               setSelectedTransaction(tx);
                               setShowTransactionDetail(true);
                             }}
-                            className="w-full flex items-center justify-between p-4 rounded-[4px] border border-gray-200 hover:border-blue-200 hover:shadow-md transition-all cursor-pointer hover:bg-gradient-to-r hover:from-blue-50/30 hover:to-transparent"
+                            className="group w-full flex items-center justify-between p-3 rounded-[4px] border-l-4 border-r border-t border-b bg-white hover:bg-gradient-to-r hover:from-blue-50 hover:to-white transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md"
+                            style={{
+                              borderLeftColor: tx.zkp_enabled ? '#9333ea' : (isOutgoing ? '#0019ff' : '#3b82f6')
+                            }}
                           >
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-3">
                               <div
                                 className={classNames(
-                                  "w-10 h-10 rounded-full flex items-center justify-center relative",
-                                  tx.zkp_enabled ? "bg-purple-50" : (isOutgoing ? "bg-blue-50" : "bg-blue-50/70")
+                                  "w-9 h-9 rounded-[4px] flex items-center justify-center relative transition-transform duration-200 group-hover:scale-110",
+                                  tx.zkp_enabled ? "bg-purple-100" : (isOutgoing ? "bg-[#0019ff]/10" : "bg-blue-100/70")
                                 )}
                               >
                                 {tx.zkp_enabled ? (
-                                  <Shield className="w-5 h-5 text-purple-600" />
+                                  <Shield className="w-4 h-4 text-purple-600" />
                                 ) : (
                                   <ArrowRightLeft
                                     className={classNames(
-                                      "w-5 h-5",
-                                      isOutgoing ? "text-blue-600 rotate-90" : "text-blue-500 -rotate-90"
+                                      "w-4 h-4",
+                                      isOutgoing ? "text-[#0019ff] rotate-90" : "text-blue-600 -rotate-90"
                                     )}
                                   />
                                 )}
@@ -3618,24 +3634,24 @@ export default function DashboardPage() {
                                 </p>
                               </div>
                             </div>
-                            <div className="text-right flex flex-col items-end gap-1">
+                            <div className="text-right flex flex-col items-end gap-0.5">
                               <p
                                 className={classNames(
-                                  "text-sm font-bold font-mono tracking-tight",
-                                  tx.zkp_enabled ? "text-purple-600" : (isOutgoing ? "text-blue-600" : "text-blue-500")
+                                  "text-base font-bold font-mono tracking-tight transition-colors duration-200",
+                                  tx.zkp_enabled ? "text-purple-600 group-hover:text-purple-700" : (isOutgoing ? "text-[#0019ff] group-hover:text-blue-700" : "text-blue-600 group-hover:text-blue-700")
                                 )}
                               >
                                 {isOutgoing ? "-" : "+"} {formatTransactionAmount(tx)}
                               </p>
                               {getPrivacyBadge(tx) && (
                                 <span className={classNames(
-                                  "text-[10px] px-2 py-0.5 rounded-full border font-semibold",
+                                  "text-[9px] px-1.5 py-0.5 rounded-[4px] border font-bold uppercase tracking-wider",
                                   getPrivacyBadge(tx)!.className
                                 )}>
-                                  🔒 {getPrivacyBadge(tx)!.text}
+                                  {getPrivacyBadge(tx)!.text}
                                 </span>
                               )}
-                              <p className="text-xs text-gray-500">
+                              <p className="text-[10px] text-gray-500 font-medium">
                                 {tx.timestamp ? getRelativeTime(tx.timestamp) : "Pending"}
                               </p>
                             </div>
@@ -3646,23 +3662,23 @@ export default function DashboardPage() {
 
                     {/* Pagination Controls */}
                     {getTotalPages() > 1 && (
-                      <div className="mt-6 flex items-center justify-between border-t border-gray-200 pt-4">
-                        <div className="text-sm text-gray-600">
-                          Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, getFilteredAndSortedTransactions().length)} of {getFilteredAndSortedTransactions().length} transactions
+                      <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-3">
+                        <div className="text-[10px] text-gray-500 font-medium">
+                          Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, getFilteredAndSortedTransactions().length)} of {getFilteredAndSortedTransactions().length}
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
                           <button
                             onClick={() => setCurrentPage(currentPage - 1)}
                             disabled={currentPage === 1}
                             className={classNames(
-                              "px-3 py-2 rounded-[4px] border transition-all flex items-center gap-1",
+                              "px-2 py-1 rounded-[4px] border transition-all duration-200 flex items-center gap-0.5 shadow-sm",
                               currentPage === 1
                                 ? "border-gray-200 text-gray-400 cursor-not-allowed"
-                                : "border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400"
+                                : "border-gray-300 text-gray-700 hover:bg-[#0019ff] hover:text-white hover:border-[#0019ff]"
                             )}
                           >
-                            <ChevronLeft className="w-4 h-4" />
-                            Previous
+                            <ChevronLeft className="w-3 h-3" />
+                            <span className="text-[10px] font-semibold">Prev</span>
                           </button>
 
                           <div className="flex items-center gap-1">
@@ -3674,8 +3690,8 @@ export default function DashboardPage() {
 
                               if (!showPage) {
                                 // Show ellipsis
-                                if (page === 2 && currentPage > 3) return <span key={page} className="px-2 text-gray-400">...</span>;
-                                if (page === getTotalPages() - 1 && currentPage < getTotalPages() - 2) return <span key={page} className="px-2 text-gray-400">...</span>;
+                                if (page === 2 && currentPage > 3) return <span key={page} className="px-1 text-gray-400 text-xs">...</span>;
+                                if (page === getTotalPages() - 1 && currentPage < getTotalPages() - 2) return <span key={page} className="px-1 text-gray-400 text-xs">...</span>;
                                 return null;
                               }
 
@@ -3684,10 +3700,10 @@ export default function DashboardPage() {
                                   key={page}
                                   onClick={() => setCurrentPage(page)}
                                   className={classNames(
-                                    "px-3 py-2 rounded-[4px] border transition-all min-w-[40px]",
+                                    "w-7 h-7 rounded-[4px] border transition-all duration-200 text-[11px] font-bold shadow-sm",
                                     currentPage === page
-                                      ? "bg-[#0019ff] text-white border-[#0019ff]"
-                                      : "border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400"
+                                      ? "bg-[#0019ff] text-white border-[#0019ff] scale-110 shadow-md"
+                                      : "border-gray-300 text-gray-700 hover:bg-[#0019ff] hover:text-white hover:border-[#0019ff]"
                                   )}
                                 >
                                   {page}
@@ -3700,21 +3716,22 @@ export default function DashboardPage() {
                             onClick={() => setCurrentPage(currentPage + 1)}
                             disabled={currentPage === getTotalPages()}
                             className={classNames(
-                              "px-3 py-2 rounded-[4px] border transition-all flex items-center gap-1",
+                              "px-2 py-1 rounded-[4px] border transition-all duration-200 flex items-center gap-0.5 shadow-sm",
                               currentPage === getTotalPages()
                                 ? "border-gray-200 text-gray-400 cursor-not-allowed"
-                                : "border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400"
+                                : "border-gray-300 text-gray-700 hover:bg-[#0019ff] hover:text-white hover:border-[#0019ff]"
                             )}
                           >
-                            Next
-                            <ChevronRight className="w-4 h-4" />
+                            <span className="text-[10px] font-semibold">Next</span>
+                            <ChevronRight className="w-3 h-3" />
                           </button>
                         </div>
                       </div>
                     )}
-                      </div>
+                    </div>
                     </>
                   )}
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -3729,32 +3746,32 @@ export default function DashboardPage() {
                 transition={{ duration: 0.3 }}
                 className="space-y-6"
               >
-                <div className="bg-white border border-gray-200 rounded p-8 shadow-sm">
-                  <div className="flex items-center justify-between mb-8">
+                <div className="bg-white border border-gray-200 rounded-[4px] p-6 shadow-lg">
+                  <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
                     <div>
-                      <h2 className="text-3xl font-bold text-black tracking-tight">Transactions</h2>
-                      <p className="text-gray-500 text-sm mt-1">Send and receive RAIN tokens</p>
+                      <h2 className="text-2xl font-bold text-black tracking-tight">Transactions</h2>
+                      <p className="text-gray-600 text-xs mt-0.5 font-medium">Send and receive RAIN tokens</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="text-xs text-gray-400">Network Fee: 0.001 RAIN</div>
+                      <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wide bg-gray-50 px-2.5 py-1 rounded-[4px] border border-gray-200">Network Fee: 0.001 RAIN</div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                     {/* Send Form */}
-                    <div className="border border-gray-200 rounded p-6 hover:shadow-md transition-shadow duration-300">
-                      <div className="flex items-center gap-3 mb-6">
-                        <div className="w-10 h-10 rounded bg-[#0019ff]/10 flex items-center justify-center">
-                          <ArrowRightLeft className="w-5 h-5 text-[#0019ff]" />
+                    <div className="border border-gray-200 rounded-[4px] p-5 hover:shadow-md transition-all duration-200 bg-gradient-to-br from-white to-gray-50">
+                      <div className="flex items-center gap-2.5 mb-5 pb-3 border-b border-gray-200">
+                        <div className="w-8 h-8 rounded-[4px] bg-[#0019ff] flex items-center justify-center">
+                          <ArrowRightLeft className="w-4 h-4 text-white" />
                         </div>
-                        <h3 className="text-xl font-bold text-black">Send RAIN</h3>
+                        <h3 className="text-lg font-bold text-black">Send RAIN</h3>
                       </div>
                       <form onSubmit={handleSubmitTransaction} className="space-y-5">
                         {/* ⭐ NEW: VM Selector */}
                         <VMSelector value={vmType} onChange={setVmType} />
 
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Recipient Address</label>
+                          <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">Recipient Address</label>
                           <div className="flex gap-2">
                             <div className="relative flex-1">
                               <input
@@ -3788,7 +3805,7 @@ export default function DashboardPage() {
                                 }}
                                 required
                                 className={classNames(
-                                  "w-full px-4 py-3 border rounded focus:ring-2 focus:ring-[#0019ff] outline-none transition-all font-mono text-sm text-gray-900 pr-10",
+                                  "w-full px-3 py-2.5 border rounded-[4px] focus:ring-2 focus:ring-[#0019ff] outline-none transition-all font-mono text-xs text-gray-900 pr-10",
                                   addressExists === true && !addressIsNew
                                     ? "border-green-500 focus:border-green-500"
                                     : addressExists === true && addressIsNew
@@ -3818,19 +3835,19 @@ export default function DashboardPage() {
                             <button
                               type="button"
                               onClick={() => setShowQRScanner(true)}
-                              className="px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded border border-gray-300 transition-colors flex items-center gap-2"
+                              className="px-3 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-[4px] border border-gray-300 transition-colors flex items-center gap-2"
                               title="Scan QR Code"
                             >
-                              <QrCode className="w-5 h-5 text-gray-700" />
+                              <QrCode className="w-4 h-4 text-gray-700" />
                             </button>
                             {/* Address Book Button */}
                             <button
                               type="button"
                               onClick={() => setShowAddressBook(true)}
-                              className="px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded border border-gray-300 transition-colors flex items-center gap-2"
+                              className="px-3 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-[4px] border border-gray-300 transition-colors flex items-center gap-2"
                               title="Address Book"
                             >
-                              <Book className="w-5 h-5 text-gray-700" />
+                              <Book className="w-4 h-4 text-gray-700" />
                             </button>
                           </div>
 
@@ -3857,7 +3874,7 @@ export default function DashboardPage() {
                                             setRecipient(addr);
                                             validateRecipientAddress(addr);
                                           }}
-                                          className="px-2 py-1 bg-gray-100 hover:bg-[#0019ff] hover:text-white border border-gray-200 hover:border-[#0019ff] rounded text-xs font-mono transition-all flex items-center gap-1.5"
+                                          className="px-2 py-1 bg-gray-100 hover:bg-[#0019ff] hover:text-white border border-gray-200 hover:border-[#0019ff] rounded-[4px] text-xs font-mono transition-all flex items-center gap-1.5"
                                           title={addr}
                                         >
                                           <User className="w-3 h-3 flex-shrink-0" />
@@ -3907,7 +3924,7 @@ export default function DashboardPage() {
                         </div>
                         <div>
                           <div className="flex items-center justify-between mb-2">
-                            <label className="block text-sm font-semibold text-gray-700">Amount (RAIN)</label>
+                            <label className="block text-xs font-bold uppercase tracking-wide text-gray-700">Amount (RAIN)</label>
                             <button
                               type="button"
                               onClick={handleMaxAmount}
@@ -3923,9 +3940,9 @@ export default function DashboardPage() {
                               value={amount}
                               onChange={(e) => handleAmountChange(e.target.value)}
                               required
-                              className="w-full px-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-[#0019ff] focus:border-[#0019ff] outline-none transition-all hover:border-gray-400 pr-16 text-gray-900 font-mono"
+                              className="w-full px-3 py-2.5 border border-gray-300 rounded-[4px] focus:ring-2 focus:ring-[#0019ff] focus:border-[#0019ff] outline-none transition-all hover:border-gray-400 pr-16 text-gray-900 font-mono text-xs"
                             />
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-gray-400">
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-400">
                               RAIN
                             </div>
                           </div>
@@ -3959,12 +3976,12 @@ export default function DashboardPage() {
                         />
 
                         {/* ZKP Privacy Toggle */}
-                        <div className="border-2 border-purple-200 rounded-lg p-4 bg-gradient-to-br from-purple-50 to-white">
-                          <div className="flex items-start justify-between mb-3">
+                        <div className="border-2 border-purple-200 rounded-[4px] p-3 bg-gradient-to-br from-purple-50 to-white">
+                          <div className="flex items-start justify-between mb-2">
                             <div className="flex items-center gap-2">
-                              <Shield className="w-5 h-5 text-purple-600" />
+                              <Shield className="w-4 h-4 text-purple-600" />
                               <div>
-                                <h4 className="text-sm font-bold text-purple-900">Zero-Knowledge Privacy</h4>
+                                <h4 className="text-xs font-bold text-purple-900 uppercase tracking-wide">Zero-Knowledge Privacy</h4>
                                 <p className="text-xs text-purple-700 mt-0.5">Hide transaction details from public view</p>
                               </div>
                             </div>
@@ -3987,38 +4004,38 @@ export default function DashboardPage() {
 
                           {/* Privacy Level Selector */}
                           {enableZKP && (
-                            <div className="mt-4">
-                              <label className="block text-sm font-medium text-gray-700 mb-3">
+                            <div className="mt-3">
+                              <label className="block text-xs font-bold uppercase tracking-wide text-gray-700 mb-2">
                                 Privacy Level
                               </label>
 
-                              <div className="grid grid-cols-3 gap-3">
+                              <div className="grid grid-cols-3 gap-2">
                                 {/* Level 1: Partial */}
                                 <button
                                   type="button"
                                   onClick={() => setPrivacyLevel("partial")}
                                   className={classNames(
-                                    "relative border-2 rounded-lg p-3 text-left transition-all duration-200 hover:shadow-sm",
+                                    "relative border-2 rounded-[4px] p-2.5 text-left transition-all duration-200 hover:shadow-sm",
                                     privacyLevel === "partial"
                                       ? "border-purple-500 bg-purple-50 shadow-md"
                                       : "border-gray-200 bg-white hover:border-purple-300"
                                   )}
                                 >
                                   <div className="flex items-start gap-2">
-                                    <div className="w-8 h-8 rounded bg-orange-100 flex items-center justify-center">
-                                      <DollarSign className="w-4 h-4 text-orange-600" />
+                                    <div className="w-6 h-6 rounded-[4px] bg-orange-100 flex items-center justify-center flex-shrink-0">
+                                      <DollarSign className="w-3 h-3 text-orange-600" />
                                     </div>
                                     <div className="flex-1">
-                                      <p className="text-sm font-bold text-gray-900">Level 1</p>
-                                      <p className="text-xs text-gray-600 mt-0.5">Amount Hidden</p>
+                                      <p className="text-xs font-bold text-gray-900">Level 1</p>
+                                      <p className="text-[10px] text-gray-600 mt-0.5">Amount Hidden</p>
                                     </div>
                                   </div>
                                   {privacyLevel === "partial" && (
-                                    <div className="absolute top-2 right-2 w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center">
-                                      <Check className="w-3 h-3 text-white" />
+                                    <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-purple-500 rounded-full flex items-center justify-center">
+                                      <Check className="w-2.5 h-2.5 text-white" />
                                     </div>
                                   )}
-                                  <p className="text-xs text-gray-500 mt-2">Addresses visible</p>
+                                  <p className="text-[10px] text-gray-500 mt-1.5">Addresses visible</p>
                                 </button>
 
                                 {/* Level 2: Standard */}
@@ -4026,27 +4043,27 @@ export default function DashboardPage() {
                                   type="button"
                                   onClick={() => setPrivacyLevel("standard")}
                                   className={classNames(
-                                    "relative border-2 rounded-lg p-3 text-left transition-all duration-200 hover:shadow-sm",
+                                    "relative border-2 rounded-[4px] p-2.5 text-left transition-all duration-200 hover:shadow-sm",
                                     privacyLevel === "standard"
                                       ? "border-purple-500 bg-purple-50 shadow-md"
                                       : "border-gray-200 bg-white hover:border-purple-300"
                                   )}
                                 >
                                   <div className="flex items-start gap-2">
-                                    <div className="w-8 h-8 rounded bg-blue-100 flex items-center justify-center">
-                                      <UserX className="w-4 h-4 text-blue-600" />
+                                    <div className="w-6 h-6 rounded-[4px] bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                      <UserX className="w-3 h-3 text-blue-600" />
                                     </div>
                                     <div className="flex-1">
-                                      <p className="text-sm font-bold text-gray-900">Level 2</p>
-                                      <p className="text-xs text-gray-600 mt-0.5">Sender Anonymous</p>
+                                      <p className="text-xs font-bold text-gray-900">Level 2</p>
+                                      <p className="text-[10px] text-gray-600 mt-0.5">Sender Anonymous</p>
                                     </div>
                                   </div>
                                   {privacyLevel === "standard" && (
-                                    <div className="absolute top-2 right-2 w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center">
-                                      <Check className="w-3 h-3 text-white" />
+                                    <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-purple-500 rounded-full flex items-center justify-center">
+                                      <Check className="w-2.5 h-2.5 text-white" />
                                     </div>
                                   )}
-                                  <p className="text-xs text-gray-500 mt-2">Receiver unknown</p>
+                                  <p className="text-[10px] text-gray-500 mt-1.5">Receiver unknown</p>
                                 </button>
 
                                 {/* Level 3: Full */}
@@ -4054,32 +4071,32 @@ export default function DashboardPage() {
                                   type="button"
                                   onClick={() => setPrivacyLevel("full")}
                                   className={classNames(
-                                    "relative border-2 rounded-lg p-3 text-left transition-all duration-200 hover:shadow-sm",
+                                    "relative border-2 rounded-[4px] p-2.5 text-left transition-all duration-200 hover:shadow-sm",
                                     privacyLevel === "full"
                                       ? "border-purple-500 bg-purple-50 shadow-md"
                                       : "border-gray-200 bg-white hover:border-purple-300"
                                   )}
                                 >
                                   <div className="flex items-start gap-2">
-                                    <div className="w-8 h-8 rounded bg-purple-100 flex items-center justify-center">
-                                      <ShieldCheck className="w-4 h-4 text-purple-600" />
+                                    <div className="w-6 h-6 rounded-[4px] bg-purple-100 flex items-center justify-center flex-shrink-0">
+                                      <ShieldCheck className="w-3 h-3 text-purple-600" />
                                     </div>
                                     <div className="flex-1">
-                                      <p className="text-sm font-bold text-gray-900">Level 3</p>
-                                      <p className="text-xs text-gray-600 mt-0.5">Full Privacy</p>
+                                      <p className="text-xs font-bold text-gray-900">Level 3</p>
+                                      <p className="text-[10px] text-gray-600 mt-0.5">Full Privacy</p>
                                     </div>
                                   </div>
                                   {privacyLevel === "full" && (
-                                    <div className="absolute top-2 right-2 w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center">
-                                      <Check className="w-3 h-3 text-white" />
+                                    <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-purple-500 rounded-full flex items-center justify-center">
+                                      <Check className="w-2.5 h-2.5 text-white" />
                                     </div>
                                   )}
-                                  <p className="text-xs text-gray-500 mt-2">Complete anonymity</p>
+                                  <p className="text-[10px] text-gray-500 mt-1.5">Complete anonymity</p>
                                 </button>
                               </div>
 
                               {/* Privacy Level Explanation */}
-                              <div className="mt-3 bg-purple-50 border border-purple-200 rounded-lg p-3 text-xs text-purple-800">
+                              <div className="mt-2 bg-purple-50 border border-purple-200 rounded-[4px] p-2.5 text-xs text-purple-800">
                                 {privacyLevel === "partial" && (
                                   <p><strong>Amount Hidden:</strong> Addresses visible, amount encrypted with ZKP</p>
                                 )}
@@ -4094,9 +4111,9 @@ export default function DashboardPage() {
                           )}
 
                           {enableZKP && (
-                            <div className="mt-3 bg-purple-100 border border-purple-200 rounded p-3 text-xs text-purple-800">
-                              <p className="font-semibold mb-1">🔒 Privacy Features Enabled:</p>
-                              <ul className="space-y-0.5 ml-4 list-disc">
+                            <div className="mt-2 bg-purple-100 border border-purple-200 rounded-[4px] p-2.5 text-xs text-purple-800">
+                              <p className="font-bold mb-1 uppercase tracking-wide">Privacy Features Enabled:</p>
+                              <ul className="space-y-0.5 ml-4 list-disc text-[11px]">
                                 <li>Amount will be hidden from blockchain explorers</li>
                                 <li>Sender & recipient addresses are shielded</li>
                                 <li>Transaction validity is cryptographically proven</li>
@@ -4108,7 +4125,7 @@ export default function DashboardPage() {
 
                         <button
                           type="submit"
-                          className="w-full bg-black text-white font-semibold py-3.5 px-6 rounded hover:bg-gray-800 transition-all duration-200 shadow-sm hover:shadow flex items-center justify-center gap-2 group"
+                          className="w-full bg-black text-white font-semibold py-3 px-6 rounded-[4px] hover:bg-gray-800 transition-all duration-200 shadow-sm hover:shadow flex items-center justify-center gap-2 group"
                         >
                           <span>Send Transaction{enableZKP && " (Private)"}</span>
                           {enableZKP ? <Shield className="w-4 h-4 group-hover:scale-110 transition-transform" /> : <ArrowRightLeft className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
@@ -4117,68 +4134,75 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Receive */}
-                    <div className="border border-gray-200 rounded p-6 hover:shadow-md transition-shadow duration-300">
-                      <div className="flex items-center gap-3 mb-6">
-                        <div className="w-10 h-10 rounded bg-green-50 flex items-center justify-center">
-                          <Copy className="w-5 h-5 text-green-600" />
+                    <div className="border border-gray-200 rounded-[4px] overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+                      {/* Header with blue separator */}
+                      <div className="bg-gradient-to-r from-blue-50 to-white px-4 py-3 border-b border-gray-200">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-[4px] bg-[#0019ff] flex items-center justify-center flex-shrink-0">
+                            <Copy className="w-4 h-4 text-white" />
+                          </div>
+                          <h3 className="text-sm font-bold text-black uppercase tracking-wide">Receive RAIN</h3>
                         </div>
-                        <h3 className="text-xl font-bold text-black">Receive RAIN</h3>
                       </div>
 
+                      {/* Content */}
+                      <div className="p-4">
+
                       {/* QR Code */}
-                      <div className="flex justify-center mb-6">
+                      <div className="flex justify-center mb-4">
                         <div className="relative">
-                          <div className="bg-white p-4 rounded border-2 border-gray-200 shadow-sm relative">
-                            {address && <QRCode value={address} size={180} />}
+                          <div className="bg-white p-3 rounded-[4px] border-2 border-gray-200 shadow-sm relative">
+                            {address && <QRCode value={address} size={160} />}
                             {/* Blur overlay */}
                             {!showQRCode && (
-                              <div className="absolute inset-0 backdrop-blur-md bg-white/30 rounded flex items-center justify-center">
+                              <div className="absolute inset-0 backdrop-blur-md bg-white/30 rounded-[4px] flex items-center justify-center">
                                 <div className="text-center">
-                                  <Eye className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                                  <Eye className="w-6 h-6 text-gray-400 mx-auto mb-1.5" />
                                   <p className="text-xs text-gray-600 font-medium">Click to reveal</p>
                                 </div>
                               </div>
                             )}
                           </div>
-                          <div className="absolute -top-2 -right-2 bg-green-500 w-6 h-6 rounded-full flex items-center justify-center">
-                            <Check className="w-4 h-4 text-white" />
+                          <div className="absolute -top-1.5 -right-1.5 bg-green-500 w-5 h-5 rounded-full flex items-center justify-center">
+                            <Check className="w-3 h-3 text-white" />
                           </div>
                           {/* Toggle button */}
                           <button
                             type="button"
                             onClick={() => setShowQRCode(!showQRCode)}
-                            className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-[#0019ff] text-white p-2 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+                            className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 bg-[#0019ff] text-white p-1.5 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
                           >
-                            {showQRCode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            {showQRCode ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                           </button>
                         </div>
                       </div>
 
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         <div>
-                          <p className="text-xs uppercase tracking-wider font-semibold text-gray-500 mb-2">Your Wallet Address</p>
-                          <div className="bg-gray-50 border border-gray-200 rounded p-3">
-                            <p className="text-sm font-mono text-black break-all">{address}</p>
+                          <p className="text-xs uppercase tracking-wide font-bold text-gray-500 mb-1.5">Your Wallet Address</p>
+                          <div className="bg-gray-50 border border-gray-200 rounded-[4px] p-2.5">
+                            <p className="text-xs font-mono text-black break-all">{address}</p>
                           </div>
                         </div>
 
                         <button
                           onClick={handleCopyAddress}
-                          className="w-full bg-[#0019ff] text-white font-semibold py-3.5 px-6 rounded hover:bg-blue-700 transition-all duration-200 shadow-sm hover:shadow flex items-center justify-center gap-2 group"
+                          className="w-full bg-[#0019ff] text-white font-semibold py-3 px-6 rounded-[4px] hover:bg-blue-700 transition-all duration-200 shadow-sm hover:shadow flex items-center justify-center gap-2 group"
                         >
                           {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                           <span>{copied ? "Address Copied!" : "Copy Address"}</span>
                         </button>
 
-                        <div className="bg-yellow-50 border border-yellow-100 rounded p-4">
+                        <div className="bg-yellow-50 border border-yellow-100 rounded-[4px] p-3">
                           <div className="flex items-start gap-2">
-                            <Bell className="w-4 h-4 text-yellow-600 mt-0.5" />
+                            <Bell className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
                             <div className="text-xs text-yellow-700">
-                              <p className="font-semibold mb-1">Security Notice</p>
+                              <p className="font-bold mb-0.5 uppercase tracking-wide">Security Notice</p>
                               <p>Only share this address to receive RAIN tokens on Rainum network</p>
                             </div>
                           </div>
                         </div>
+                      </div>
                       </div>
                     </div>
                   </div>
