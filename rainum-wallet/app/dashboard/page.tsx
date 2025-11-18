@@ -30,6 +30,8 @@ import AIChatWidget from "@/components/AIChatWidget";
 import { GasEstimator } from "@/components/GasEstimator";
 import CrossChainSwap from "@/components/CrossChainSwap";
 import { DualVMDashboard } from "@/components/DualVMDashboard";
+import NFTMarketplace from "@/components/NFTMarketplaceWithAlgolia";
+import RainumPreloader from "@/components/Preloader";
 import { VMSelector, VMTypeBadge, type VMType } from "@/components/shared/VMSelector";
 import { CrossVMIndicator } from "@/components/shared/CrossVMBadge";
 import { MoveTransactionDetails } from "@/components/shared/MoveTransactionDetails";
@@ -95,11 +97,14 @@ import {
   TrendingUp,
   Key,
   Plug,
+  Image,
 } from "lucide-react";
+import Preloader from "@/components/Preloader";
 
 const navigationItems = [
   { name: "Wallet", icon: Wallet },
   { name: "Transactions", icon: ArrowRightLeft },
+  { name: "NFTs", icon: Image },
   { name: "Staking", icon: TrendingUp },
   {
     name: "Smart Contracts",
@@ -1396,10 +1401,7 @@ export default function DashboardPage() {
   if (!isHydrated) {
     return (
       <div className="w-full h-screen flex items-center justify-center bg-white">
-        <div className="text-center">
-          <RefreshCw size={48} className="text-[#0019ff] animate-spin mx-auto mb-4" />
-          <p className="text-gray-600 font-medium">Loading...</p>
-        </div>
+        <Preloader size={80} />
       </div>
     );
   }
@@ -1591,14 +1593,7 @@ export default function DashboardPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   className="flex flex-col items-center justify-center py-12"
                 >
-                  <div className="w-16 h-16 mb-6 rounded-[4px] bg-[#0019ff] flex items-center justify-center">
-                    <div className="relative w-8 h-8">
-                      <div className="absolute inset-0 border-2 border-white/20 rounded-full"></div>
-                      <div className="absolute inset-0 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    </div>
-                  </div>
-                  <h3 className="text-xl font-bold text-black mb-2">Generating QR Code</h3>
-                  <p className="text-sm text-gray-500">Please wait...</p>
+                  <Preloader size={80} />
                 </motion.div>
               ) : (
                 /* QR Code Content */
@@ -4204,6 +4199,49 @@ export default function DashboardPage() {
                         </div>
                       </div>
                       </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* NFT Marketplace */}
+            {activeTab === "NFTs" && (
+              <motion.div
+                key="nfts"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="relative"
+              >
+                {/* Blurred NFT Marketplace Content */}
+                <div className="blur-sm pointer-events-none select-none">
+                  <NFTMarketplace />
+                </div>
+
+                {/* Under Development Banner Overlay */}
+                <div className="absolute inset-0 flex items-start justify-center pt-24 pointer-events-none">
+                  <div className="bg-white border border-gray-200 rounded shadow-2xl p-8 max-w-lg text-center pointer-events-auto">
+                    {/* Rainum Preloader */}
+                    <div className="mb-6">
+                      <RainumPreloader size={80} />
+                    </div>
+
+                    {/* Content */}
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Under Development</h3>
+                    <p className="text-gray-600 mb-6 leading-relaxed">
+                      The NFT Marketplace is currently under development and will be available soon.
+                    </p>
+
+                    {/* Coming Soon Badge */}
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded text-sm font-medium text-blue-700">
+                      <div className="flex gap-1">
+                        <span className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-pulse"></span>
+                        <span className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></span>
+                        <span className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></span>
+                      </div>
+                      <span>Coming Soon</span>
                     </div>
                   </div>
                 </div>
